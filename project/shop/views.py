@@ -8,7 +8,9 @@ from django.contrib.auth import login as auth_login, authenticate
 from .forms import RegisterForm
 from owner.models import product,category,subcategory, role,user
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 # Create your views here.
 def index(request):
 #    products = product.objects.all()  # Sare products fetch karne ke liye
@@ -89,28 +91,63 @@ def login(request):
      #            messages.error(request, "Invalid email or password!")
      #    except user.DoesNotExist:
      #        messages.error(request, "Invalid email or password!")
-
-     return render(request, "shop/template/login.html") 
+     if request.method == 'POST':
+        email = request.POST['email']
+        password = request.POST['password']
+        
+        user = authenticate(request, username=email, password=password)
+        
+        if user is not None:
+            login(request, user)
+            
+            # ✅ Role ID ke basis pe redirect karna
+            if user.role_id.id == 1:  # 1 means Admin
+                return redirect('ownerhome')
+            else:  # Any other role means Customer
+                return redirect('home')
+        else:
+            messages.error(request, "Invalid email or password")
+    
+     return render(request, "login.html") 
      
 
 def register(request):
-#     if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user_instance = form.save(commit=False)
-            user_instance.password = make_password(form.cleaned_data['password'])  # Password hashing
-            
-            # Default role set karein (Customer)
-            customer_role = role.objects.get(role_type="Customer")  # role_name aapke role table me hona chahiye
-            user_instance.role_id = customer_role
+    if request.method == 'POST':
+        fname = request.POST['fname']
+        lname = request.POST['lname']
+        email = request.POST['email']
+        password = request.POST['password']
+        mob_no = request.POST['mob_no']
+        address = request.POST['address']
+        gender = request.POST['gender']
+        area_id = request.POST['area_id']
+        shop_id = request.POST['shop_id']
+        role_id = request.POST['role_id']  # Role ID (1 = Admin, 2 = Customer)
 
-            user_instance.save()
-            messages.success(request, "Registration successful! You can now log in.")
-            return redirect('home')
-        else:
-               form = RegisterForm()
+        if User.objects.filter(Email=email).exists():
+            messages.error(request, "Email already exists!")
+            return redirect('register')
+
+        user = User(
+            Fname=fname,
+            Lname=lname,
+            Email=email,
+            Mob_no=mob_no,
+            Address=address,
+            Gender=gender,
+            Area_id_id=area_id,  # ForeignKey ke liye "_id" lagana zaroori hai
+            shop_id_id=shop_id,  # ForeignKey ke liye "_id" lagana zaroori hai
+            role_id_id=role_id  # Role assign karega
+        )
+        user.set_password(password)  # ✅ Password ko hash karega
+        user.save()  # ✅ MySQL "user" table me save karega
+
+        messages.success(request, "Registration successful!")
+        return redirect('login')
+
           
-        return render(request, 'register.html', {'form': form})
+    return render(request, 'register.html')
+# , {'form': form}
 
 def contact(request):
      return render(request,"shop/template/contact.html")

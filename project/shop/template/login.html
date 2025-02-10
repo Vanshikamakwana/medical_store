@@ -553,7 +553,7 @@
                             <p style="color: red;">{{ message }}</p>
                         {% endfor %}
                         {% endif %}
-                        <form action="{% url 'login' %}" class="ltn__form-box contact-form-box" method="POST">
+                        <form action="{% url 'login' %}" class="ltn__form-box contact-form-box" method="Post">
 
                             {% csrf_token %}
                             <input type="email" name="email" placeholder="Email*" id="email" required>

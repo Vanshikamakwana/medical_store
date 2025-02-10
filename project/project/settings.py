@@ -148,4 +148,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/home/'  # Login hone ke baad kahan jana hai
 LOGOUT_REDIRECT_URL = '/login/'  # Logout hone ke baad kahan jana hai
 
+AUTH_USER_MODEL = 'owner.CustomUser'
 
+
+AUTHENTICATION_BACKENDS = [
+    'owner.backends.EmailBackend',  # ✅ Custom Email Backend
+    'django.contrib.auth.backends.ModelBackend',  # ✅ Default Django Backend (optional)
+]
