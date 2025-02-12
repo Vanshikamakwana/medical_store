@@ -1,10 +1,12 @@
  
 # Create your models here.
+from gettext import translation
 from django.db import models
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models herfrom django.db import models
-from datetime import datetime
+from datetime import date, datetime
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin,BaseUserManager
 from django.contrib.auth.models import User
 
@@ -242,7 +244,7 @@ class Sales_return(models.Model):
     sal_ret_date=models.DateTimeField()
     reason=models.CharField(max_length=20,null=False)
 
-class  product(models.Model):
+class Product(models.Model):
     product_id=models.AutoField(primary_key=True)
     product_name=models.CharField(max_length=50,null=False)
     product_des=models.CharField(max_length=40,null=False)
@@ -257,16 +259,27 @@ class  product(models.Model):
     # Sales_id=models.ForeignKey(Sales,on_delete=models.CASCADE)
     # sel_ret_id=models.ForeignKey(Sales_return,on_delete=models.CASCADE)
     pro_photo_url=models.ImageField(upload_to="products/",default="")
+    stock_quantity = models.PositiveIntegerField(default=0)
+    def __str__(self):
+        return self.product_name
 # class Product_photo(models.Model):
 #     pro_photo_id=models.AutoField(primary_key=True)
 #     pro_photo_url=models.ImageField(upload_to="shop/images",default="")
-#     product_id=models.ForeignKey(product,on_delete=models.CASCADE)
+#     product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
    
 
 class Batch(models.Model):
     batch_id=models.AutoField(primary_key=True)
-    product_id=models.ForeignKey(product,on_delete=models.CASCADE)
-    batch_expiry_date=models.DateField()
+    product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
+    batch_quantity = models.IntegerField(null=False, default=0)
+    batch_number = models.CharField(max_length=50,null=False,default=0)
+    batch_expiry_date = models.DateField()
+
+    def is_expired(self):
+        return self.batch_expiry_date < date.today()
+
+    def __str__(self):
+        return f"{self.product.name} - {self.batch_number}"
    
 
 class payment(models.Model):
@@ -286,8 +299,7 @@ class suppliers(models.Model):
     suppliers_contact=models.CharField(max_length=13,null=False)
     comp_id=models.ForeignKey(Product_company,on_delete=models.CASCADE)
 
-class purchase(models.Model):
-    
+class purchase(models.Model):  
     purchase_id=models.AutoField(primary_key=True)
     purchase_name=models.CharField(max_length=20,null=False)
     purchase_desc=models.CharField(max_length=50,null=False)
@@ -300,11 +312,11 @@ class purchase_return(models.Model):
     reason=models.CharField(max_length=50,null=False)
     date=models.DateTimeField()
     purchase_id=models.ForeignKey(purchase,on_delete=models.CASCADE)
-    product_id=models.ForeignKey(product,on_delete=models.CASCADE)
+    product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
 
 class sales_details(models.Model):
      Sales_id=models.ForeignKey(Sales,on_delete=models.CASCADE)
-     product_id=models.ForeignKey(product,on_delete=models.CASCADE)
+     product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      qty=models.IntegerField(null=False,default=0)
      price=models.DecimalField(max_digits=10,decimal_places=2)
      class meta:
@@ -314,7 +326,7 @@ class sales_details(models.Model):
 
 class sales_return_details(models.Model):
      sel_ret_id=models.ForeignKey(Sales_return,on_delete=models.CASCADE)
-     product_id=models.ForeignKey(product,on_delete=models.CASCADE)
+     product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      qty=models.IntegerField(null=False,default=0)
      price=models.DecimalField(max_digits=10,decimal_places=2)
      class meta:
@@ -323,7 +335,7 @@ class sales_return_details(models.Model):
      
 
 class purchase_details(models.Model):
-     product_id=models.ForeignKey(product,on_delete=models.CASCADE)
+     product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      purchase_id=models.ForeignKey(purchase,on_delete=models.CASCADE)
      qty=models.IntegerField(null=False,default=0)
      price=models.DecimalField(max_digits=10,decimal_places=2)
@@ -333,7 +345,7 @@ class purchase_details(models.Model):
      
 
 class purchase_return_details(models.Model):
-     product_id=models.ForeignKey(product,on_delete=models.CASCADE)
+     product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      purchase_return_id=models.ForeignKey(purchase,on_delete=models.CASCADE)
      qty=models.IntegerField(null=False,default=0)
      price=models.DecimalField(max_digits=10,decimal_places=2)
@@ -343,7 +355,7 @@ class purchase_return_details(models.Model):
 
 class unit_of_measurement_product(models.Model):
 
-     product_id=models.ForeignKey(product,on_delete=models.CASCADE)
+     product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      unit_measurement_id=models.ForeignKey(unit_of_measurement,on_delete=models.CASCADE)
        
      class meta:
@@ -352,7 +364,7 @@ class unit_of_measurement_product(models.Model):
 
 class Cart(models.Model):
      User_id=models.ForeignKey(user,on_delete=models.CASCADE)
-     product_id=models.ForeignKey(product,on_delete=models.CASCADE)
+     product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      qty=models.IntegerField(null=False,default=0)
      totalamount=models.DecimalField(max_digits=10,decimal_places=2)
      class meta:
@@ -363,7 +375,7 @@ class Cart(models.Model):
 
 class feedback(models.Model):
      User_id=models.ForeignKey(user,on_delete=models.CASCADE)
-     product_id=models.ForeignKey(product,on_delete=models.CASCADE)
+     product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      feedbacks=models.CharField(max_length=25,null=False)
      Date=models.DateTimeField()
      class meta:
@@ -374,7 +386,7 @@ class feedback(models.Model):
      
 class rating(models.Model):
      User_id=models.ForeignKey(user,on_delete=models.CASCADE)
-     product_id=models.ForeignKey(product,on_delete=models.CASCADE)
+     product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      rate=models.IntegerField()
      rate_Date=models.DateTimeField()
      class meta:
@@ -382,3 +394,74 @@ class rating(models.Model):
      def __str__(self):
         return f"User:{self.user.Fname} Product:{self.product.product_name}"
     
+
+@receiver(post_save, sender=sales_details)
+def reduce_stock(sender, instance, **kwargs):
+    """
+    Reduce stock from the batches when a sale happens.
+    """
+    product = instance.product_id
+    ordered_quantity = instance.qty
+    batches = Batch.objects.filter(product=product).order_by('batch_expiry_date')
+
+    for batch in batches:
+        if batch.batch_quantity >= ordered_quantity:
+            batch.batch_quantity -= ordered_quantity
+            batch.save()
+            break
+        else:
+            ordered_quantity -= batch.batch_quantity
+            batch.batch_quantity = 0
+            batch.save()
+
+    if ordered_quantity > 0:
+        raise ValueError("Stock adjustment issue: Not enough stock available!")
+
+def allocate_stock(sales_detail):
+    """
+    Customer ke requested product quantity ko available batches se allocate karega.
+    """
+    product = sales_detail.product_id
+    required_qty = sales_detail.qty
+
+    # ✅ Step 1: Get all available batches sorted by expiry date (FIFO)
+    available_batches = Batch.objects.filter(product_id=product).order_by('batch_expiry_date')
+
+    if not available_batches.exists():
+        raise ValueError(f"Product '{product.product_name}' is out of stock!")
+
+    remaining_qty = required_qty
+
+    # ✅ Step 2: Iterate through batches and allocate stock
+    for batch in available_batches:
+        if remaining_qty <= 0:
+            break  # Agar puri quantity mil gayi, loop se bahar niklo
+        
+        if batch.stock_quantity >= remaining_qty:
+            # ✅ Step 3a: Batch me sufficient stock hai, poora deduct karo
+            batch.stock_quantity -= remaining_qty
+            batch.save()
+            remaining_qty = 0
+        else:
+            # ✅ Step 3b: Batch ka poora stock use karo aur remaining dusri batch se lo
+            remaining_qty -= batch.stock_quantity
+            batch.stock_quantity = 0
+            batch.save()
+
+    # ✅ Step 4: Agar ab bhi quantity fulfill nahi hui, raise error
+    if remaining_qty > 0:
+        raise ValueError(f"Not enough stock available for '{product.product_name}'!")
+
+    return True
+
+# ✅ Django Signal: Order Place Hote Hi Stock Deduct Ho Jaye
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=sales_details)
+def update_stock_on_order(sender, instance, **kwargs):
+    try:
+        with translation.atomic():  # ✅ Ensure atomicity
+            allocate_stock(instance)
+    except ValueError as e:
+        print(f"Stock Error: {str(e)}")

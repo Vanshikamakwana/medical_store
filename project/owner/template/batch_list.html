@@ -1,0 +1,30 @@
+<html>
+    <body>
+       
+<h2>Batch List</h2>
+<a href="{% url 'create_batch' %}">+ Add New Batch</a>
+<table border="1">
+    <tr>
+        <th>Product</th>
+        <th>Batch Number</th>
+        <th>Quantity</th>
+        <th>Expiry Date</th>
+        <th>Actions</th>
+    </tr>
+    {% for batch in batches %}
+    <tr>
+        <td>{{ batch.product_id.product_name }}</td>
+        <td>{{ batch.batch_id }}</td>
+        <td>{{ batch.batch_quantity }}</td>
+        <td>{{ batch.batch_expiry_date }}</td>
+        <td>
+            <a href="{% url 'update_batch' batch.batch_id %}">Edit</a> | 
+            <a href="{% url 'delete_batch' batch.batch_id %}" onclick="return confirm('Are you sure?')">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+        </body>
+</html>

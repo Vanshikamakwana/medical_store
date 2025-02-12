@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supplier List</title>
+</head>
+<body>
+    <h2>Supplier List</h2>
+    <a href="{% url 'add_supplier' %}">+ Add New Supplier</a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier Name</th>
+                <th>Contact</th>
+                <th>Company</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for supplier in suppliers %}
+            <tr>
+                <td>{{ supplier.suppliers_id }}</td>
+                <td>{{ supplier.suppliers_name }}</td>
+                <td>{{ supplier.suppliers_contact }}</td>
+                <td>{{ supplier.comp_id.comp_name }}</td>
+                <td>
+                    <a href="{% url 'update_supplier' supplier.suppliers_id %}">Edit</a> |
+                    <a href="{% url 'delete_supplier' supplier.suppliers_id %}" 
+                       onclick="return confirm('Are you sure you want to delete this supplier?');">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

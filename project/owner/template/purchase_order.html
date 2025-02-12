@@ -1,0 +1,118 @@
+<!-- filepath: /c:/Users/HP/Desktop/project/project/owner/template/purchase_order.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Purchase Order</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+    <style>
+        .form-container {
+            background-color: #28a745; /* Green background color */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            margin: 0 auto; /* Center the form */
+            max-width: 600px; /* Adjust the max-width as needed */
+            color: white; /* White text color */
+        }
+        .form-container h2 {
+            color: white; /* White text color for the heading */
+        }
+        .form-container label {
+            color: white; /* White text color for labels */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="form-container">
+            <h2 class="text-center">Create Purchase Order</h2>
+            <form class="row g-3" method="POST">
+                {% csrf_token %}
+                
+                <!-- Purchase Name -->
+                <div class="col-md-6">
+                    <label for="purchase_name">Purchase Name</label>
+                    <input type="text" name="purchase_name" class="form-control" required>
+                </div>
+
+                <!-- Purchase Description -->
+                <div class="col-12">
+                    <label for="purchase_desc">Purchase Description</label>
+                    <input type="text" name="purchase_desc" class="form-control" required>
+                </div>
+
+                <!-- Supplier Selection -->
+                <div class="col-md-6">
+                    <label for="suppliers_id">Supplier</label>
+                    <select name="suppliers_id" class="form-control" required>
+                        <option value="">Select Supplier</option>
+                        {% for supplier in suppliers_list %}
+                        <option value="{{ supplier.suppliers_id }}">{{ supplier.suppliers_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Product Selection -->
+                <div class="col-md-6">
+                    <label for="product_id">Product</label>
+                    <select name="product_id" class="form-control" required>
+                        <option value="">Select Product</option>
+                        {% for product in products_list %}
+                        <option value="{{ product.product_id }}" data-price="{{ product.product_price }}">{{ product.product_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Quantity -->
+                <div class="col-md-6">
+                    <label for="qty">Quantity</label>
+                    <input type="number" name="qty" class="form-control" required>
+                </div>
+
+                <!-- Price -->
+                <div class="col-md-6">
+                    <label for="price">Price</label>
+                    <input type="number" name="price" class="form-control" step="0.01" required readonly>
+                </div>
+
+                <!-- Total Price -->
+                <div class="col-12">
+                    <label for="total_price">Total Price</label>
+                    <input type="number" name="total_price" class="form-control" step="0.01" required readonly>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="col-12">
+                    <button type="submit" class="btn btn-light">Create Purchase</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS (optional for functionality) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const productSelect = document.querySelector('select[name="product_id"]');
+            const qtyInput = document.querySelector('input[name="qty"]');
+            const priceInput = document.querySelector('input[name="price"]');
+            const totalPriceInput = document.querySelector('input[name="total_price"]');
+
+            function updatePrice() {
+                const selectedOption = productSelect.options[productSelect.selectedIndex];
+                const productPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+                const quantity = parseInt(qtyInput.value) || 0;
+                const totalPrice = productPrice * quantity;
+
+                priceInput.value = productPrice.toFixed(2);
+                totalPriceInput.value = totalPrice.toFixed(2);
+            }
+
+            productSelect.addEventListener('change', updatePrice);
+            qtyInput.addEventListener('input', updatePrice);
+        });
+    </script>
+</body>
+</html>

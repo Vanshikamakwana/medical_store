@@ -71,12 +71,12 @@
         <h4>Admin Panel</h4>
         <a href="#" class="sidebar-item"><i class="fas fa-home"></i> Dashboard</a>
         <a href="#" class="sidebar-item"><i class="fas fa-user"></i> Manage Profile</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-truck"></i> Manage Suppliers</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-users"></i> Manage Delivery Person</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-list"></i> Manage Category</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-box"></i> Manage Products</a>
+        <a href="{% url 'supplier_list' %}" class="sidebar-item"><i class="fas fa-truck"></i> Manage Suppliers</a>
+        <a href="{% url 'delivery_person_list' %}" class="sidebar-item"><i class="fas fa-users"></i> Manage Delivery Person</a>
+        <a href="{% url 'product_list' %}" class="sidebar-item"><i class="fas fa-box"></i> Manage Products</a>
         <a href="{% url 'view_order' %}" class="sidebar-item"><i class="fas fa-shopping-cart"></i> View Orders</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-boxes"></i> Manage Stock</a>
+        <a href="{% url 'purchase_order' %}" class="sidebar-item"><i class="fas fa-boxes"></i> Manage Stock</a>
+        <a href="{% url 'list_batches' %}" class="sidebar-item"><i class="fas fa-boxes"></i> Manage batch</a>
         <a href="#" class="sidebar-item"><i class="fas fa-money-bill"></i> Manage Payments</a>
         <a href="#" class="sidebar-item"><i class="fas fa-chart-line"></i> Reports</a>
     </div>

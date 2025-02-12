@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Person List</title>
+</head>
+<body>
+    <h2>Delivery Person List</h2>
+    <a href="{% url 'add_delivery_person' %}">Add New Delivery Person</a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Mobile No</th>
+                <th>Address</th>
+                <th>Role</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for person in delivery_persons %}
+            <tr>
+                <td>{{ person.Del_person_id }}</td>
+                <td>{{ person.Del_name }}</td>
+                <td>{{ person.mobile_no }}</td>
+                <td>{{ person.Address }}</td>
+                <td>{{ person.role_id.role_type }}</td>  
+                <td>{{ person.is_active|yesno:"Yes,No" }}</td>
+                <td>
+                    <a href="{% url 'update_delivery_person' person.Del_person_id %}">Edit</a> |
+                    <a href="{% url 'delete_delivery_person' person.Del_person_id %}" onclick="return confirm('Are you sure?')">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No Delivery Persons Found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
