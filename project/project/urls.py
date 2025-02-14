@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from  shop import views
 from owner import views
+from account import views as account_views
 from django.urls import include
 
 
@@ -26,4 +27,5 @@ urlpatterns = [
     path(" ",views.index,name="home"),
     path('', include('shop.urls')),
     path('', include('owner.urls')),
+    # path('account/', include('account.urls')),
 ]

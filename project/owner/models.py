@@ -10,44 +10,44 @@ from datetime import date, datetime
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin,BaseUserManager
 from django.contrib.auth.models import User
 
-class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError("The Email field must be set")
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+# class CustomUserManager(BaseUserManager):
+#     def create_user(self, email, password=None, **extra_fields):
+#         if not email:
+#             raise ValueError("The Email field must be set")
+#         email = self.normalize_email(email)
+#         user = self.model(email=email, **extra_fields)
+#         user.set_password(password)
+#         user.save(using=self._db)
+#         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email, password, **extra_fields)
+#     def create_superuser(self, email, password=None, **extra_fields):
+#         extra_fields.setdefault('is_staff', True)
+#         extra_fields.setdefault('is_superuser', True)
+#         return self.create_user(email, password, **extra_fields)
 
-# ✅ 2. Custom User Model
-class CustomUser(AbstractBaseUser, PermissionsMixin):
-    User_id = models.AutoField(primary_key=True)  
-    Fname = models.CharField(max_length=20, null=False)
-    Lname = models.CharField(max_length=20, null=False)
-    Gender = models.CharField(max_length=2, null=False)
-    Address = models.CharField(max_length=20, null=False)
-    Mob_no = models.CharField(max_length=13, null=False)
-    Email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128, null=False)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+# # ✅ 2. Custom User Model
+# class CustomUser(AbstractBaseUser, PermissionsMixin):
+#     User_id = models.AutoField(primary_key=True)  
+#     Fname = models.CharField(max_length=20, null=False)
+#     Lname = models.CharField(max_length=20, null=False)
+#     Gender = models.CharField(max_length=2, null=False)
+#     Address = models.CharField(max_length=20, null=False)
+#     Mob_no = models.CharField(max_length=13, null=False)
+#     Email = models.EmailField(unique=True)
+#     password = models.CharField(max_length=128, null=False)
+#     is_active = models.BooleanField(default=True)
+#     is_staff = models.BooleanField(default=False)
 
-    objects = CustomUserManager()
+#     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'Email'
-    REQUIRED_FIELDS = ['Fname', 'Lname']
+#     USERNAME_FIELD = 'Email'
+#     REQUIRED_FIELDS = ['Fname', 'Lname']
 
-    class Meta:
-        db_table = 'user'  # ✅ MySQL ke existing "user" table se match karega
+#     class Meta:
+#         db_table = 'user'  # ✅ MySQL ke existing "user" table se match karega
 
-    def __str__(self):
-        return self.Email
+#     def __str__(self):
+#         return self.Email
 
 
 class state(models.Model):
@@ -108,63 +108,6 @@ class user(models.Model):
     role_id = models.ForeignKey('role', on_delete=models.CASCADE,default="customer")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
-# # ✅ Custom User Manager
-# class CustomUserManager(BaseUserManager):
-#     def create_user(self, email, password=None, **extra_fields):
-#         if not email:
-#             raise ValueError("The Email field must be set")
-#         email = self.normalize_email(email)
-#         extra_fields.setdefault('is_active', True)
-#         user = self.model(email=email, **extra_fields)
-#         user.set_password(password)
-#         user.save(using=self._db)
-#         return user
-
-#     def create_superuser(self, email, password=None, **extra_fields):
-#         extra_fields.setdefault('is_staff', True)
-#         extra_fields.setdefault('is_superuser', True)
-#         return self.create_user(email, password, **extra_fields)
-
-# # ✅ Custom User Model
-# class CustomUser(AbstractBaseUser, PermissionsMixin):
-#     User_id = models.AutoField(primary_key=True)  
-#     Fname = models.CharField(max_length=20, null=False)
-#     Lname = models.CharField(max_length=20, null=False)
-#     Gender = models.CharField(max_length=2, null=False)
-#     Address = models.CharField(max_length=20, null=False)
-#     Mob_no = models.CharField(max_length=13, null=False)
-#     Email = models.EmailField(unique=True)
-#     password = models.CharField(max_length=128, null=False)
-#     Area_id = models.ForeignKey('Area', on_delete=models.CASCADE)
-#     shop_id = models.ForeignKey('shop', on_delete=models.CASCADE)
-#     role_id = models.ForeignKey('role', on_delete=models.CASCADE, default=1)
-#     is_active = models.BooleanField(default=True)
-#     is_staff = models.BooleanField(default=False)
-#     is_superuser = models.BooleanField(default=False)
-
-#     # ✅ related_name set karein to avoid conflicts
-#     groups = models.ManyToManyField(
-#         "auth.Group",
-#         related_name="customuser_groups",
-#         blank=True
-#     )
-#     user_permissions = models.ManyToManyField(
-#         "auth.Permission",
-#         related_name="customuser_permissions",
-#         blank=True
-#     )
-
-#     objects = CustomUserManager()
-
-#     USERNAME_FIELD = 'Email'
-#     REQUIRED_FIELDS = ['Fname', 'Lname', 'Mob_no']
-
-#     class Meta:
-#         db_table = 'user'  # ✅ Existing MySQL table ka naam
-
-#     def __str__(self):
-#         return self.Email
 
     
 class complains (models.Model):

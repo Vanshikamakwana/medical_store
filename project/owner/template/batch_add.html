@@ -1,20 +1,15 @@
-<!-- filepath: /c:/Users/HP/Desktop/project/project/owner/template/batch_add.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Batch</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
+{% extends "owner/template/base.html" %}
+
+{% block title %}Manage Profile{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
         <h2>Add Batch</h2>
         <form method="POST">
             {% csrf_token %}
             <div class="form-group">
-                <label for="product">Product</label>
-                <select name="product" class="form-control" required>
+                <label for="product_id">Product</label>
+                <select name="product_id" class="form-control" required>
                     <option value="">Select Product</option>
                     {% for product in products %}
                     <option value="{{ product.product_id }}">{{ product.product_name }}</option>
@@ -33,8 +28,7 @@
                 <label for="batch_expiry_date">Batch Expiry Date</label>
                 <input type="date" name="batch_expiry_date" class="form-control" required>
             </div>
-            <button type="submit" class="btn btn-primary">Add Batch</button>
+            <button type="submit" class="btn btn-success">Add Batch</button>
         </form>
     </div>
-</body>
-</html>
+{% endblock %}

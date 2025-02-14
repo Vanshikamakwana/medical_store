@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'shop',
     'owner',
-    'delivery'
+    'delivery',
+    # 'account',
 ]
 
 MIDDLEWARE = [
@@ -62,7 +63,7 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR,"shop/template","owner/template"],
+        'DIRS': [BASE_DIR,"shop/template","owner/template","account/template","delivery/template"],  # Template directories
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -148,7 +149,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/home/'  # Login hone ke baad kahan jana hai
 LOGOUT_REDIRECT_URL = '/login/'  # Logout hone ke baad kahan jana hai
 
-AUTH_USER_MODEL = 'owner.CustomUser'
+# AUTH_USER_MODEL = 'owner.CustomUser'
 
 
 AUTHENTICATION_BACKENDS = [

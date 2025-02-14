@@ -1,45 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delivery Person List</title>
-</head>
-<body>
+<!-- filepath: /c:/Users/HP/Desktop/project/project/owner/template/delivery_person_list.html -->
+{% extends "owner/template/base.html" %}
+
+{% block title %}Delivery Person List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
     <h2>Delivery Person List</h2>
-    <a href="{% url 'add_delivery_person' %}">Add New Delivery Person</a>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Mobile No</th>
-                <th>Address</th>
-                <th>Role</th>
-                <th>Active</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for person in delivery_persons %}
-            <tr>
-                <td>{{ person.Del_person_id }}</td>
-                <td>{{ person.Del_name }}</td>
-                <td>{{ person.mobile_no }}</td>
-                <td>{{ person.Address }}</td>
-                <td>{{ person.role_id.role_type }}</td>  
-                <td>{{ person.is_active|yesno:"Yes,No" }}</td>
-                <td>
-                    <a href="{% url 'update_delivery_person' person.Del_person_id %}">Edit</a> |
-                    <a href="{% url 'delete_delivery_person' person.Del_person_id %}" onclick="return confirm('Are you sure?')">Delete</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="7">No Delivery Persons Found</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html>
+    <a href="{% url 'add_delivery_person' %}" class="btn btn-primary mb-3">Add New Delivery Person</a>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover" style="width: 100%;">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Mobile No</th>
+                    <th>Address</th>
+                    <th>Role</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for person in delivery_persons %}
+                <tr>
+                    <td>{{ person.Del_person_id }}</td>
+                    <td>{{ person.Del_name }}</td>
+                    <td>{{ person.mobile_no }}</td>
+                    <td>{{ person.Address }}</td>
+                    <td>{{ person.role_id.role_type }}</td>  
+                    <td>{{ person.is_active|yesno:"Yes,No" }}</td>
+                    <td>
+                        <a href="{% url 'update_delivery_person' person.Del_person_id %}" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="{% url 'delete_delivery_person' person.Del_person_id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No Delivery Persons Found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

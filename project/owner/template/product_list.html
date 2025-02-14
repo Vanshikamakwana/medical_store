@@ -1,35 +1,48 @@
-<html>
-    <head>
-    </head>
-    <body>
-        <h2>Product List</h2>
-<a href="{% url 'product_create' %}">Add New Product</a>
-<table border="1">
-    <tr>
-        <th>Product ID</th>
-        <th>Name</th>
-        <th>Price</th>
-        <th>Expiry Date</th>
-        <th>Photo</th>
-        <th>Actions</th>
-    </tr>
-    {% for product in products %}
-    <tr>
-        <td>{{ product.product_id }}</td>
-        <td>{{ product.product_name }}</td>
-        <td>${{ product.product_price }}</td>
-        <td>{{ product.product_expiry_date }}</td>
-        <td><img src="{{ product.pro_photo_url.url }}" width="50"></td>
-        <td>
-            <a href="{% url 'product_update' product.product_id %}">Edit</a>
-            <form action="{% url 'product_delete' product.product_id %}" method="POST" style="display:inline;">
+<!-- filepath: /c:/Users/HP/Desktop/project/project/owner/template/product_list.html -->
+{% extends "owner/template/base.html" %}
+
+{% block title %}Product List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Product List</h2>
+    <a href="{% url 'product_create' %}" class="btn btn-primary mb-3">Add New Product</a>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover" style="width: 100%;">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Product ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>available quantity</th>
+                    <th>Expiry Date</th>
+                    <th>Photo</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.product_id }}</td>
+                    <td>{{ product.product_name }}</td>
+                    <td>${{ product.product_price }}</td>
+                    <td>{{ product.stock_quantity }}</td>
+                    <td>{{ product.product_expiry_date }}</td>
+                    <td><img src="{{ product.pro_photo_url.url }}" width="50"></td>
+                    <td>
+                        <a href="{% url 'product_update' product.product_id %}" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="{% url 'product_delete' product.product_id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+
+ {% comment %} <form action="{% url 'product_delete' product.product_id %}" method="POST" style="display:inline;" class="btn btn-sm btn-danger">
                 {% csrf_token %}
                 <button type="submit">Delete</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-
-    </body>
-</html>
+            </form> {% endcomment %}

@@ -1,4 +1,4 @@
-
+{% comment %} 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,19 +70,238 @@
     <div id="sidebar">
         <h4>Admin Panel</h4>
         <a href="#" class="sidebar-item"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-user"></i> Manage Profile</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-truck"></i> Manage Suppliers</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-users"></i> Manage Delivery Person</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-list"></i> Manage Category</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-box"></i> Manage Products</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-shopping-cart"></i> View Orders</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-boxes"></i> Manage Stock</a>
+        <a href="{% url 'manage_profile' %}" class="sidebar-item"><i class="fas fa-user"></i> Manage Profile</a>
+        <a href="{% url 'supplier_list' %}" class="sidebar-item"><i class="fas fa-truck"></i> Manage Suppliers</a>
+        <a href="{% url 'delivery_person_list' %}" class="sidebar-item"><i class="fas fa-users"></i> Manage Delivery Person</a>
+        <a href="{% url 'product_list' %}" class="sidebar-item"><i class="fas fa-box"></i> Manage Products</a>
+        <a href="{% url 'view_order' %}" class="sidebar-item"><i class="fas fa-shopping-cart"></i> View Orders</a>
+        <a href="{% url 'purchase_order' %}" class="sidebar-item"><i class="fas fa-boxes"></i> Manage Stock</a>
+        <a href="{% url 'list_batches' %}" class="sidebar-item"><i class="fas fa-boxes"></i> Manage batch</a>
         <a href="#" class="sidebar-item"><i class="fas fa-money-bill"></i> Manage Payments</a>
         <a href="#" class="sidebar-item"><i class="fas fa-chart-line"></i> Reports</a>
     </div>
 
 {% block content %}
+
+
 {% endblock content %}
 
+<script>
+    var ctx1 = document.getElementById('salesChart').getContext('2d');
+    var salesChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+            datasets: [{
+                label: 'Sales ($)',
+                data: [5000, 7000, 8000, 6000, 9000, 11000],
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    var ctx2 = document.getElementById('analyticsChart').getContext('2d');
+    var analyticsChart = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+            datasets: [{
+                label: 'User Growth',
+                data: [100, 200, 400, 600, 800, 1200],
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    var ctx3 = document.getElementById('pieChart').getContext('2d');
+    var pieChart = new Chart(ctx3, {
+        type: 'pie',
+        data: {
+            labels: ['Electronics', 'Clothing', 'Groceries', 'Furniture', 'Toys'],
+            datasets: [{
+                label: 'Sales Distribution',
+                data: [40, 25, 15, 10, 10],
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+</script>
+</body>
+</html> {% endcomment %}
+
+
+
+<!-- filepath: /c:/Users/HP/Desktop/project/project/owner/template/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            display: flex;
+        }
+        #sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #343a40;
+            color: white;
+            padding: 15px;
+            position: fixed;
+        }
+        #content {
+            margin-left: 250px;
+            padding: 20px;
+            width: 100%;
+        }
+        .sidebar-item {
+            padding: 10px;
+            display: block;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar-item:hover {
+            background: #495057;
+            border-radius: 5px;
+        }
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .stat-box {
+            width: 350px;
+            background: rgb(43, 131, 43);
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        .charts-container {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin: 40px auto;
+            gap: 20px;
+        }
+        .chart-container {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                {% include 'owner/template/sidebar.html' %}
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var ctx1 = document.getElementById('salesChart').getContext('2d');
+        var salesChart = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                datasets: [{
+                    label: 'Sales ($)',
+                    data: [5000, 7000, 8000, 6000, 9000, 11000],
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        var ctx2 = document.getElementById('analyticsChart').getContext('2d');
+        var analyticsChart = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                datasets: [{
+                    label: 'User Growth',
+                    data: [100, 200, 400, 600, 800, 1200],
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        var ctx3 = document.getElementById('pieChart').getContext('2d');
+        var pieChart = new Chart(ctx3, {
+            type: 'pie',
+            data: {
+                labels: ['Electronics', 'Clothing', 'Groceries', 'Furniture', 'Toys'],
+                datasets: [{
+                    label: 'Sales Distribution',
+                    data: [40, 25, 15, 10, 10],
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    </script>
 </body>
 </html>

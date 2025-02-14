@@ -1,0 +1,140 @@
+{% extends "owner/template/base.html" %}
+
+{% block title %}Manage Profile{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Manage Profile</h2>
+    <br/>
+        <!-- Static Profile View -->
+        <div id="profileView">
+            <p><strong>First Name:</strong> {{ user.Fname }}</p>
+            <p><strong>Last Name:</strong> {{ user.Lname }}</p>
+            <p><strong>Gender:</strong> {{ user.Gender }}</p>
+            <p><strong>Address:</strong> {{ user.Address }}</p>
+            <p><strong>Mobile No:</strong> {{ user.Mob_no }}</p>
+            <p><strong>Email:</strong> {{ user.Email }}</p>
+            <p><strong>Role:</strong> {{ user.role_id.role_name }}</p>
+            <p><strong>Shop:</strong> {{ user.shop_id.shop_name }}</p>
+            <p><strong>Area:</strong> {{ user.Area_id.area_name }}</p>
+            <p><strong>Active:</strong> {{ user.is_active }}</p>
+    
+            <button class="btn btn-primary" onclick="toggleEdit()">Edit Profile</button>
+            <button class="btn btn-warning" onclick="togglePasswordChange()">Change Password</button>
+        </div>
+    
+        <!-- Editable Profile Form -->
+        <form id="profileEditForm" method="post" style="display: none;">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="Fname" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="Fname" name="Fname" value="{{ user.Fname }}" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="Lname" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="Lname" name="Lname" value="{{ user.Lname }}" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="Gender" class="form-label">Gender</label>
+                <select class="form-control" id="Gender" name="Gender" required>
+                    <option value="M" {% if user.Gender == "M" %}selected{% endif %}>Male</option>
+                    <option value="F" {% if user.Gender == "F" %}selected{% endif %}>Female</option>
+                </select>
+            </div>
+    
+            <div class="mb-3">
+                <label for="Address" class="form-label">Address</label>
+                <input type="text" class="form-control" id="Address" name="Address" value="{{ user.Address }}" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="Mob_no" class="form-label">Mobile No</label>
+                <input type="text" class="form-control" id="Mob_no" name="Mob_no" value="{{ user.Mob_no }}" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="role_id" class="form-label">Role</label>
+                <select class="form-control" id="role_id" name="role_id" required>
+                    {% for role in roles %}
+                        <option value="{{ role.role_id }}" {% if user.role_id.id == role.role_id %}selected{% endif %}>
+                            {{ role.role_type }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+    
+            <div class="mb-3">
+                <label for="shop_id" class="form-label">Shop</label>
+                <select class="form-control" id="shop_id" name="shop_id" required>
+                    {% for shop in shops %}
+                        <option value="{{ shop.shop_id }}" {% if user.shop.shop_id == shop.shop_id %}selected{% endif %}>
+                            {{ shop.shop_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+    
+            <div class="mb-3">
+                <label for="Area_id" class="form-label">Area</label>
+                <select class="form-control" id="Area_id" name="Area_id" required>
+                    {% for area in areas %}
+                        <option value="{{ area.Area_id }}" {% if user.Area.Area_id == area.Area_id %}selected{% endif %}>
+                            {{ area.Area_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+    
+            <div class="mb-3">
+                <label for="is_active" class="form-label">Active</label>
+                <select class="form-control" id="is_active" name="is_active" required>
+                    <option value="True" {% if user.is_active %}selected{% endif %}>Yes</option>
+                    <option value="False" {% if not user.is_active %}selected{% endif %}>No</option>
+                </select>
+            </div>
+    
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <button type="button" class="btn btn-secondary" onclick="toggleEdit()">Cancel</button>
+        </form>
+    
+        <!-- Change Password Form -->
+        <form id="passwordChangeForm" method="post" style="display: none;">
+            {% csrf_token %}
+            <h4>Change Password</h4>
+    
+            <div class="mb-3">
+                <label for="current_password" class="form-label">Current Password</label>
+                <input type="password" class="form-control" id="current_password" name="current_password" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="new_password" class="form-label">New Password</label>
+                <input type="password" class="form-control" id="new_password" name="new_password" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+            </div>
+    
+            <button type="submit" class="btn btn-success">Update Password</button>
+            <button type="button" class="btn btn-secondary" onclick="togglePasswordChange()">Cancel</button>
+        </form>
+    
+    </div>
+</div>
+    <script>
+    function toggleEdit() {
+        document.getElementById("profileView").style.display = "none";
+        document.getElementById("profileEditForm").style.display = "block";
+    }
+    
+    function togglePasswordChange() {
+        document.getElementById("profileView").style.display = "none";
+        document.getElementById("passwordChangeForm").style.display = "block";
+    }
+    </script>
+
+{% endblock %}

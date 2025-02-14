@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Supplier</title>
-</head>
-<body>
+{% extends "owner/template/base.html" %}
+
+{% block title %}Batch List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
     <h2>Add Supplier</h2>
     <form method="post">
         {% csrf_token %}
@@ -24,9 +24,8 @@
         </select>
         <br><br>
 
-        <button type="submit">Save</button>
+        <button type="submit" class="btn btn-success">Save</button>
     </form>
 
     <a href="{% url 'supplier_list' %}">Back to Supplier List</a>
-</body>
-</html>
+{% endblock %}

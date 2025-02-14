@@ -25,6 +25,11 @@ urlpatterns = [
     path('batches/add/', views.create_batch, name='create_batch'),
     path('batches/update/<int:batch_id>/', views.update_batch, name='update_batch'),
     path('batches/delete/<int:batch_id>/', views.delete_batch, name='delete_batch'),
+    path("manage-profile/", views.manage_profile, name="manage_profile"),
+    path("register/", views.register, name="register1"),
+    # path("manage-profile/", views.manage_profile, name="manage_profile"),
+    # path("manage-profile/", views.manage_profile, name="manage_profile"),
+    # path("change_password/", views.change_password, name="change_password"),
 
 ]
 if settings.DEBUG:

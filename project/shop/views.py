@@ -1,3 +1,4 @@
+from itertools import product
 from django.contrib import messages
 from urllib import request
 from django.shortcuts import render,redirect, get_object_or_404
@@ -10,7 +11,7 @@ from owner.models import Product,category,subcategory, role,user
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
-User = get_user_model()
+# User = get_user_model()
 # Create your views here.
 def index(request):
 #    products = product.objects.all()  # Sare products fetch karne ke liye
@@ -76,21 +77,6 @@ def order_tracking(request):
 def account(request):
      return render(request,"shop/template/account.html")
 def login(request):
-     # if request.method == "POST":
-     #    email = request.POST["email"]
-     #    password = request.POST["password"]
-        
-     #    try:
-     #        user = user.objects.get(email=email)  # Get the user by email
-     #        if user.check_password(password):  # Check if the password is correct
-     #            # Manually log the user in
-     #            request.session['User_id'] = user.id
-     #            messages.success(request, "Login successful!")
-     #            return redirect("home")  # Redirect to home page
-     #        else:
-     #            messages.error(request, "Invalid email or password!")
-     #    except user.DoesNotExist:
-     #        messages.error(request, "Invalid email or password!")
      if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']

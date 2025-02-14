@@ -1,4 +1,4 @@
-
+<!-- filepath: /c:/Users/HP/Desktop/project/project/owner/template/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,6 +63,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            height:500px;
         }
     </style>
 </head>
@@ -70,7 +71,7 @@
     <div id="sidebar">
         <h4>Admin Panel</h4>
         <a href="#" class="sidebar-item"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-user"></i> Manage Profile</a>
+        <a href="{% url 'manage_profile' %}" class="sidebar-item"><i class="fas fa-user"></i> Manage Profile</a>
         <a href="{% url 'supplier_list' %}" class="sidebar-item"><i class="fas fa-truck"></i> Manage Suppliers</a>
         <a href="{% url 'delivery_person_list' %}" class="sidebar-item"><i class="fas fa-users"></i> Manage Delivery Person</a>
         <a href="{% url 'product_list' %}" class="sidebar-item"><i class="fas fa-box"></i> Manage Products</a>
@@ -79,6 +80,8 @@
         <a href="{% url 'list_batches' %}" class="sidebar-item"><i class="fas fa-boxes"></i> Manage batch</a>
         <a href="#" class="sidebar-item"><i class="fas fa-money-bill"></i> Manage Payments</a>
         <a href="#" class="sidebar-item"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="{% url 'register1' %}" class="sidebar-item"><i class="fas fa-chart-line"></i> Register</a>
+
     </div>
     <div id="content">
         <nav class="navbar navbar-light bg-light">
@@ -104,20 +107,21 @@
                 </div>
             </div>
             <div class="charts-container">
-                <div class="chart-container">
-                    <canvas id="salesChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="analyticsChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="pieChart"></canvas>
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card mb-3">
+                            <div class="card-header">Monthly Sales</div>
+                            <div class="card-body">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="row mt-4">
                 <div class="col-md-12">
                     <div class="card mb-3">
-                        <div class="card-header">orders</div>
+                        <div class="card-header">Orders</div>
                         <div class="card-body">
                             <table class="table table-striped">
                                 <thead>
@@ -125,8 +129,9 @@
                                         <th scope="col">Order ID</th>
                                         <th scope="col">Customer</th>
                                         <th scope="col">Date</th>
-                                        <th scope="col">status</th>
-                                        
+                                        <th scope="col">Product Name</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -135,8 +140,17 @@
                                         <td>{{ order.Sales_id }}</td>
                                         <td>{{ order.User_id.Fname }}</td>
                                         <td>{{ order.Sales_date }}</td>
+                                        <td>
+                                            {% for detail in order.sales_details_set.all %}
+                                                {{ detail.product_id.product_name }}<br>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for detail in order.sales_details_set.all %}
+                                                {{ detail.qty }}<br>
+                                            {% endfor %}
+                                        </td>
                                         <td>{{ order.order_status }}</td>
-                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>  
@@ -148,17 +162,17 @@
             <div class="row mt-4">
                 <div class="col-md-12">
                     <div class="card mb-3">
-                        <div class="card-header">users</div>
+                        <div class="card-header">Users</div>
                         <div class="card-body">
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
                                         <th scope="col">User ID</th>
-                                        <th scope="col">Lirst name</th>
-                                        <th scope="col">Last name</th>
+                                        <th scope="col">First Name</th>
+                                        <th scope="col">Last Name</th>
                                         <th scope="col">Gender</th>
                                         <th scope="col">Address</th>
-                                        <th scope="col">Mobile no</th>
+                                        <th scope="col">Mobile No</th>
                                         <th scope="col">Email</th>
                                     </tr>
                                 </thead>
@@ -172,7 +186,6 @@
                                         <td>{{ user.Address }}</td>
                                         <td>{{ user.Mob_no }}</td>
                                         <td>{{ user.Email }}</td>
-                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -183,69 +196,31 @@
             </div>
         </div>
         <script>
-            var ctx1 = document.getElementById('salesChart').getContext('2d');
-            var salesChart = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+            document.addEventListener('DOMContentLoaded', function() {
+                var ctx = document.getElementById('salesChart').getContext('2d');
+                var salesData = {
+                    labels: [{% for data in sales_data %}'{{ data.Sales_date__month }}',{% endfor %}],
                     datasets: [{
-                        label: 'Sales ($)',
-                        data: [5000, 7000, 8000, 6000, 9000, 11000],
+                        label: 'Total Sales',
+                        data: [{% for data in sales_data %}{{ data.total_sales }},{% endfor %}],
                         backgroundColor: 'rgba(75, 192, 192, 0.5)',
                         borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 1
                     }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                };
+                var salesChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: salesData,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
                         }
                     }
-                }
-            });
-            
-            var ctx2 = document.getElementById('analyticsChart').getContext('2d');
-            var analyticsChart = new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-                    datasets: [{
-                        label: 'User Growth',
-                        data: [100, 200, 400, 600, 800, 1200],
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 2,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-            
-            var ctx3 = document.getElementById('pieChart').getContext('2d');
-            var pieChart = new Chart(ctx3, {
-                type: 'pie',
-                data: {
-                    labels: ['Electronics', 'Clothing', 'Groceries', 'Furniture', 'Toys'],
-                    datasets: [{
-                        label: 'Sales Distribution',
-                        data: [40, 25, 15, 10, 10],
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
-                    }]
-                },
-                options: {
-                    responsive: true
-                }
+                });
             });
         </script>
     </body>
     </html>
-    

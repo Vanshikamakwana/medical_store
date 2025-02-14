@@ -1,26 +1,88 @@
 from datetime import datetime
-from gettext import translation
-from django.http import JsonResponse
+from django.db import transaction
+from pyexpat.errors import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import render,redirect,get_object_or_404
 from owner.models import Batch, Product_company, Sales, sales_details,user
-from owner.models import purchase, suppliers,Product,purchase_details,Delivery_person,role
+from owner.models import purchase, suppliers,Product,purchase_details,Delivery_person,role,Area,shop
+from django.contrib.auth.hashers import check_password, make_password
+from django.db.models import Sum
 from owner.forms import ProductForm
-from owner.forms import SupplierForm
 # Create your views here.
 def index(request):
     orders = Sales.objects.all()
+    # Aggregate sales data by month
+    sales_data = Sales.objects.values('Sales_date__month').annotate(total_sales=Sum('sales_details__qty')).order_by('Sales_date__month')
     users=user.objects.all()
     return render(request,'owner/template/index.html', {'orders': orders,'users':users})
-# ,{'users':users}
+
           
 def view_order(request):
     orders = Sales.objects.all()
+    sales_details=sales_details.objects.all()
     users=user.objects.all()
     return render(request, 'view_order.html', {'orders': orders,'users':users})
 
 
+# def purchase_order(request):
+    #  if request.method == 'POST':
+    #     # Form data ko handle kar rahe hain
+    #     purchase_name = request.POST.get('purchase_name')
+    #     purchase_desc = request.POST.get('purchase_desc')
+    #     total_price = request.POST.get('total_price')
+    #     suppliers_id = request.POST.get('suppliers_id')
+    #     product_id = request.POST.get('product_id')
+    #     qty = request.POST.get('qty')
+    #     price = request.POST.get('price')
+
+
+    #      # Convert qty and price to appropriate types
+    #     qty = int(qty)
+    #     price = float(price)
+    #     total_price = float(total_price)
+
+    #     # Supplier instance ko fetch kar rahe hain using the ID
+    #     supplier_instance = suppliers.objects.get(suppliers_id=suppliers_id)
+    #     product_instance = Product.objects.get(product_id=product_id)
+
+    #     # New Purchase Order create karna
+    #     new_purchase = purchase(
+    #         purchase_name=purchase_name,
+    #         purchase_desc=purchase_desc,
+    #         total_price=total_price,
+    #         suppliers_id=supplier_instance
+    #     )
+    #     new_purchase.save()
+
+    #     # New Purchase Details create karna
+    #     new_purchase_details = purchase_details(
+    #         product_id=product_instance,
+    #         purchase_id=new_purchase,
+    #         qty=qty,
+    #         price=price
+    #     )
+    #     new_purchase_details.save()
+
+
+    #      # Update the stock quantity of the product
+    #     product_instance.stock_quantity += qty
+    #     product_instance.save()
+
+    #     # Redirect to some success page or purchase list
+    #     return redirect('ownerhome')  # Modify this URL as per your app structure
+
+    #  else:
+    #         # GET request ke liye suppliers aur products ko fetch kar rahe hain
+    #         suppliers_list = suppliers.objects.all()
+    #         products_list = Product.objects.all()
+
+    #     # Template render karna
+    #  return render(request, 'purchase_order.html', {'suppliers_list': suppliers_list, 'products_list': products_list})
+
+
 def purchase_order(request):
-     if request.method == 'POST':
+   if request.method == 'POST':
         # Form data ko handle kar rahe hain
         purchase_name = request.POST.get('purchase_name')
         purchase_desc = request.POST.get('purchase_desc')
@@ -30,8 +92,7 @@ def purchase_order(request):
         qty = request.POST.get('qty')
         price = request.POST.get('price')
 
-
-         # Convert qty and price to appropriate types
+        # Convert qty and price to appropriate types
         qty = int(qty)
         price = float(price)
         total_price = float(total_price)
@@ -40,40 +101,44 @@ def purchase_order(request):
         supplier_instance = suppliers.objects.get(suppliers_id=suppliers_id)
         product_instance = Product.objects.get(product_id=product_id)
 
-        # New Purchase Order create karna
-        new_purchase = purchase(
-            purchase_name=purchase_name,
-            purchase_desc=purchase_desc,
-            total_price=total_price,
-            suppliers_id=supplier_instance
-        )
-        new_purchase.save()
+        try:
+            with transaction.atomic():
+                # New Purchase Order create karna
+                new_purchase = purchase(
+                    purchase_name=purchase_name,
+                    purchase_desc=purchase_desc,
+                    total_price=total_price,
+                    suppliers_id=supplier_instance
+                )
+                new_purchase.save()
 
-        # New Purchase Details create karna
-        new_purchase_details = purchase_details(
-            product_id=product_instance,
-            purchase_id=new_purchase,
-            qty=qty,
-            price=price
-        )
-        new_purchase_details.save()
+                # New Purchase Details create karna
+                new_purchase_details = purchase_details(
+                    product_id=product_instance,
+                    purchase_id=new_purchase,
+                    qty=qty,
+                    price=price
+                )
+                new_purchase_details.save()
 
+                # Update the stock quantity of the product
+                product_instance.stock_quantity += qty
+                product_instance.save()
 
-         # Update the stock quantity of the product
-        product_instance.stock_quantity += qty
-        product_instance.save()
+                # Redirect to some success page or purchase list
+                return redirect('ownerhome')  # Modify this URL as per your app structure
 
-        # Redirect to some success page or purchase list
-        return redirect('ownerhome')  # Modify this URL as per your app structure
+        except Exception as e:
+            # Handle any errors that occur during the transaction
+            print(f"Error: {e}")
 
-     else:
-            # GET request ke liye suppliers aur products ko fetch kar rahe hain
-            suppliers_list = suppliers.objects.all()
-            products_list = Product.objects.all()
+   else:
+        # GET request ke liye suppliers aur products ko fetch kar rahe hain
+        suppliers_list = suppliers.objects.all()
+        products_list = Product.objects.all()
 
         # Template render karna
-     return render(request, 'purchase_order.html', {'suppliers_list': suppliers_list, 'products_list': products_list})
-
+        return render(request, 'purchase_order.html', {'suppliers_list': suppliers_list, 'products_list': products_list})
 def product_list(request):
     products = Product.objects.all()
     return render(request, 'product_list.html', {'products': products})
@@ -197,7 +262,7 @@ def delete_delivery_person(request, delivery_id):
 
 def create_batch(request):
     if request.method == 'POST':
-        product_id = request.POST['product']
+        product_id = request.POST['product_id']
         batch_number = request.POST['batch_number']
         batch_quantity = request.POST['batch_quantity']
         batch_expiry_date = request.POST['batch_expiry_date']
@@ -205,12 +270,12 @@ def create_batch(request):
         product = Product.objects.get(product_id=product_id)
 
         Batch.objects.create(
-            product=product,
+            product_id=product,
             batch_number=batch_number,
             batch_quantity=batch_quantity,
             batch_expiry_date=batch_expiry_date
         )
-        return redirect('batch_list')
+        return redirect('list_batches')
 
     products = Product.objects.all()  # Dropdown ke liye
     return render(request, 'batch_add.html', {'products': products})
@@ -276,4 +341,97 @@ def allocate_product_to_order(product_id, order_qty, sales_id):
             )
 
     return f"Order placed successfully for {order_qty} units of {product.product_name}"
+@login_required
+def manage_profile(request):
+    user = request.user
+    roles = role.objects.values('role_id', 'role_type').distinct()
+    shops = shop.objects.all()
+    areas = Area.objects.all()
 
+    if request.method == "POST":
+        if "current_password" in request.POST:  # Change Password Logic
+            current_password = request.POST["current_password"]
+            new_password = request.POST["new_password"]
+            confirm_password = request.POST["confirm_password"]
+
+            if not check_password(current_password, user.password):
+                messages.error(request, "Current password is incorrect.")
+            elif new_password != confirm_password:
+                messages.error(request, "New password and confirm password do not match.")
+            else:
+                user.set_password(new_password)
+                user.save()
+                update_session_auth_hash(request, user)  # Keep user logged in
+                messages.success(request, "Password updated successfully!")
+
+        else:  # Update Profile Logic
+            user.Fname = request.POST["Fname"]
+            user.Lname = request.POST["Lname"]
+            user.Gender = request.POST["Gender"]
+            user.Address = request.POST["Address"]
+            user.Mob_no = request.POST["Mob_no"]
+            user.role_id = role.objects.get(id=request.POST["role_id"])
+            user.shop_id = shop.objects.get(id=request.POST["shop_id"])
+            user.Area_id = Area.objects.get(id=request.POST["Area_id"])
+            user.is_active = request.POST["is_active"] == "True"
+            user.save()
+            messages.success(request, "Profile updated successfully!")
+
+        return redirect("manage_profile")
+
+    return render(request, "manage_profile.html", {"user": user, "roles": roles, "shops": shops, "areas": areas})
+
+
+def register(request):
+    if request.method == "POST":
+        fname = request.POST.get('fname')
+        lname = request.POST.get('lname')
+        gender = request.POST.get('gender')
+        address = request.POST.get('address')
+        mob_no = request.POST.get('mob_no')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        area_id = request.POST.get('area_id')  # Foreign Key
+        shop_id = request.POST.get('shop_id')  # Foreign Key
+        role_id = request.POST.get('role_id')  # Foreign Key
+
+        if user.objects.filter(Email=email).exists():
+            messages.error(request, "Email already registered!")
+            return redirect('register')
+
+        hashed_password = make_password(password)  # ✅ Password hashing
+        new_user = user(
+            Fname=fname, Lname=lname, Gender=gender, Address=address,
+            Mob_no=mob_no, Email=email, password=hashed_password,
+            Area_id_id=area_id, shop_id_id=shop_id, role_id_id=role_id
+        )
+        new_user.save()
+        messages.success(request, "Account created successfully!")
+        return redirect('login')
+
+    return render(request, 'register.html')
+
+# 🟢 User Login View
+def user_login(request):
+    if request.method == "POST":
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        try:
+            user_obj = user.objects.get(Email=email)
+            if check_password(password, user_obj.password):  # ✅ Password verify
+                request.session['user_id'] = user_obj.User_id  # ✅ Session store
+                messages.success(request, "Login successful!")
+                return redirect('dashboard')
+            else:
+                messages.error(request, "Invalid password!")
+        except user.DoesNotExist:
+            messages.error(request, "User does not exist!")
+
+    return render(request, 'login.html')
+
+# 🟢 User Logout View
+def user_logout(request):
+    request.session.flush()  # ✅ Session clear
+    messages.success(request, "Logged out successfully!")
+    return redirect('login')
