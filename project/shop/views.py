@@ -7,9 +7,9 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import login as auth_login, authenticate
 from .forms import RegisterForm
-from owner.models import Product,category,subcategory, role,user
+from owner.models import Product,category,subcategory, role,CustomUser
 from django.conf import settings
-from django.contrib.auth import get_user_model
+# from django.contrib.auth import get_user_model
 
 # User = get_user_model()
 # Create your views here.

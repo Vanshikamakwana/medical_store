@@ -14,9 +14,9 @@
             <p><strong>Address:</strong> {{ user.Address }}</p>
             <p><strong>Mobile No:</strong> {{ user.Mob_no }}</p>
             <p><strong>Email:</strong> {{ user.Email }}</p>
-            <p><strong>Role:</strong> {{ user.role_id.role_name }}</p>
+            <p><strong>Role:</strong> {{ user.role_id.role_type }}</p>
             <p><strong>Shop:</strong> {{ user.shop_id.shop_name }}</p>
-            <p><strong>Area:</strong> {{ user.Area_id.area_name }}</p>
+            <p><strong>Area:</strong> {{ user.Area_id.Area_name }}</p>
             <p><strong>Active:</strong> {{ user.is_active }}</p>
     
             <button class="btn btn-primary" onclick="toggleEdit()">Edit Profile</button>

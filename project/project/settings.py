@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'shop',
     'owner',
-    'delivery',
-    # 'account',
+    'delivery'
+   
 ]
 
 MIDDLEWARE = [
@@ -63,7 +63,7 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR,"shop/template","owner/template","account/template","delivery/template"],  # Template directories
+        'DIRS': [BASE_DIR,"shop/template","owner/template","delivery/template"],  # Template directories
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -146,8 +146,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = '/home/'  # Login hone ke baad kahan jana hai
-LOGOUT_REDIRECT_URL = '/login/'  # Logout hone ke baad kahan jana hai
+# LOGIN_REDIRECT_URL = '/home/'  # Login hone ke baad kahan jana hai
+# LOGOUT_REDIRECT_URL = '/login/'  # Logout hone ke baad kahan jana hai
 
 # AUTH_USER_MODEL = 'owner.CustomUser'
 
@@ -156,3 +156,12 @@ AUTHENTICATION_BACKENDS = [
     'owner.backends.EmailBackend',  # ✅ Custom Email Backend
     'django.contrib.auth.backends.ModelBackend',  # ✅ Default Django Backend (optional)
 ]
+LOGIN_URL = '/owner/login_view/'
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'tholiyapriti011@gmail.com'  # Replace with your email address
+EMAIL_HOST_PASSWORD = 'priti@1905'  # Replace with your email password

@@ -70,7 +70,7 @@
 <body>
     <div id="sidebar">
         <h4>Admin Panel</h4>
-        <a href="#" class="sidebar-item"><i class="fas fa-home"></i> Dashboard</a>
+       
         <a href="{% url 'manage_profile' %}" class="sidebar-item"><i class="fas fa-user"></i> Manage Profile</a>
         <a href="{% url 'supplier_list' %}" class="sidebar-item"><i class="fas fa-truck"></i> Manage Suppliers</a>
         <a href="{% url 'delivery_person_list' %}" class="sidebar-item"><i class="fas fa-users"></i> Manage Delivery Person</a>
@@ -78,10 +78,13 @@
         <a href="{% url 'view_order' %}" class="sidebar-item"><i class="fas fa-shopping-cart"></i> View Orders</a>
         <a href="{% url 'purchase_order' %}" class="sidebar-item"><i class="fas fa-boxes"></i> Manage Stock</a>
         <a href="{% url 'list_batches' %}" class="sidebar-item"><i class="fas fa-boxes"></i> Manage batch</a>
-        <a href="#" class="sidebar-item"><i class="fas fa-money-bill"></i> Manage Payments</a>
+        {% comment %} <a href="#" class="sidebar-item"><i class="fas fa-money-bill"></i> Manage Payments</a> {% endcomment %}
         <a href="#" class="sidebar-item"><i class="fas fa-chart-line"></i> Reports</a>
-        <a href="{% url 'register1' %}" class="sidebar-item"><i class="fas fa-chart-line"></i> Register</a>
+        <a href="{% url 'sales_report' %}" class="sidebar-item"> sales report</a>
 
+        <a href="{% url 'register1' %}" class="sidebar-item"> Register</a>
+        <a href="{% url 'logout' %}" class="sidebar-item"> logout</a>
+        
     </div>
     <div id="content">
         <nav class="navbar navbar-light bg-light">

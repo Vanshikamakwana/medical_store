@@ -135,25 +135,32 @@
     <!-- Bootstrap JS (optional for functionality) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const productSelect = document.querySelector('select[name="product_id"]');
-            const qtyInput = document.querySelector('input[name="qty"]');
-            const priceInput = document.querySelector('input[name="price"]');
-            const totalPriceInput = document.querySelector('input[name="total_price"]');
-
-            function updatePrice() {
-                const selectedOption = productSelect.options[productSelect.selectedIndex];
-                const productPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
-                const quantity = parseInt(qtyInput.value) || 0;
-                const totalPrice = productPrice * quantity;
-
-                priceInput.value = productPrice.toFixed(2);
-                totalPriceInput.value = totalPrice.toFixed(2);
+        
+            function disableSubmitButton() {
+                document.getElementById('submit-button').disabled = true;
             }
-
-            productSelect.addEventListener('change', updatePrice);
-            qtyInput.addEventListener('input', updatePrice);
-        });
+        
     </script>
 </body>
 </html>
+
+{% comment %} <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const productSelect = document.querySelector('select[name="product_id"]');
+        const qtyInput = document.querySelector('input[name="qty"]');
+        const priceInput = document.querySelector('input[name="price"]');
+        const totalPriceInput = document.querySelector('input[name="total_price"]');
+
+        function updatePrice() {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            const productPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+            const quantity = parseInt(qtyInput.value) || 0;
+            const totalPrice = productPrice * quantity;
+
+            priceInput.value = productPrice.toFixed(2);
+            totalPriceInput.value = totalPrice.toFixed(2);
+        }
+
+        productSelect.addEventListener('change', updatePrice);
+        qtyInput.addEventListener('input', updatePrice);
+    });  {% endcomment %}

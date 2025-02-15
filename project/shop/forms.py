@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from owner.models import user
+from owner.models import CustomUser
 
 class RegisterForm(forms.ModelForm):
             # password = forms.CharField(widget=forms.PasswordInput)
@@ -21,7 +21,7 @@ class RegisterForm(forms.ModelForm):
         password = forms.CharField(widget=forms.PasswordInput)
     
         class Meta:
-            model = user
+            model = CustomUser
             fields = ['Fname', 'Lname', 'Gender', 'Address', 'Mob_no', 'Email', 'password', 'Area_id', 'shop_id']
             # , 'role_id'
             widgets = {

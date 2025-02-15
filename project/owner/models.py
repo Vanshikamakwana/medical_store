@@ -94,7 +94,7 @@ class role (models.Model):
          return f"{self.shop_id}:{self.role_type}"
 
 
-class user(models.Model):
+class CustomUser(models.Model):
     User_id = models.AutoField(primary_key=True)
     Fname = models.CharField(max_length=20, null=False)
     Lname = models.CharField(max_length=20, null=False)
@@ -115,7 +115,7 @@ class complains (models.Model):
     cmp_message=models.CharField(max_length=20,null=False)
     Date=models.DateTimeField()
     cmp_response=models.CharField(max_length=20,null=False)
-    User_id=models.ForeignKey(user,on_delete=models.CASCADE)
+    User_id=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
 
 class  Product_company(models.Model):
     comp_id=models.AutoField(primary_key=True)
@@ -141,7 +141,7 @@ class Prescription(models.Model):
     pre_id=models.AutoField(primary_key=True)
     pre_image_url=models.ImageField(upload_to="shop/images",default="")
     date=models.DateTimeField()
-    User_id=models.ForeignKey(user,on_delete=models.CASCADE)
+    User_id=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
 
     def __str__(self):
          return f"prescription of {self.User_id.Fname}"
@@ -171,7 +171,7 @@ class Sales(models.Model):
      CGST=models.FloatField(null=False)
      Sales_date=models.DateTimeField()
      pre_id=models.ForeignKey(Prescription,on_delete=models.CASCADE)
-     User_id=models.ForeignKey(user,on_delete=models.CASCADE)
+     User_id=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
      Del_person_id = models.ForeignKey(Delivery_person, on_delete=models.CASCADE, null=True, blank=True)
 # kya order ne delivery person ne assign karva mate
      order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='assigned')
@@ -306,7 +306,7 @@ class unit_of_measurement_product(models.Model):
 
 
 class Cart(models.Model):
-     User_id=models.ForeignKey(user,on_delete=models.CASCADE)
+     User_id=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
      product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      qty=models.IntegerField(null=False,default=0)
      totalamount=models.DecimalField(max_digits=10,decimal_places=2)
@@ -317,7 +317,7 @@ class Cart(models.Model):
      
 
 class feedback(models.Model):
-     User_id=models.ForeignKey(user,on_delete=models.CASCADE)
+     User_id=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
      product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      feedbacks=models.CharField(max_length=25,null=False)
      Date=models.DateTimeField()
@@ -328,7 +328,7 @@ class feedback(models.Model):
         return f"User:{self.user.Fanme} Product:{self.product.product_name}"
      
 class rating(models.Model):
-     User_id=models.ForeignKey(user,on_delete=models.CASCADE)
+     User_id=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
      product_id=models.ForeignKey(Product,on_delete=models.CASCADE)
      rate=models.IntegerField()
      rate_Date=models.DateTimeField()

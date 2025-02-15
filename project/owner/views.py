@@ -4,24 +4,28 @@ from pyexpat.errors import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import render,redirect,get_object_or_404
-from owner.models import Batch, Product_company, Sales, sales_details,user
+from owner.models import Batch, Product_company, Sales, sales_details,CustomUser
 from owner.models import purchase, suppliers,Product,purchase_details,Delivery_person,role,Area,shop
 from django.contrib.auth.hashers import check_password, make_password
+from django.utils.crypto import get_random_string
 from django.db.models import Sum
-from owner.forms import ProductForm
+from owner.forms import LoginForm, ProductForm, RegisterForm
+from owner.decorators import admin_required
+from django.core.mail import send_mail
 # Create your views here.
+@admin_required
 def index(request):
     orders = Sales.objects.all()
     # Aggregate sales data by month
     sales_data = Sales.objects.values('Sales_date__month').annotate(total_sales=Sum('sales_details__qty')).order_by('Sales_date__month')
-    users=user.objects.all()
+    users=CustomUser.objects.all()
     return render(request,'owner/template/index.html', {'orders': orders,'users':users})
 
           
 def view_order(request):
     orders = Sales.objects.all()
-    sales_details=sales_details.objects.all()
-    users=user.objects.all()
+    # sales_details=sales_details.objects.all()
+    users=CustomUser.objects.all()
     return render(request, 'view_order.html', {'orders': orders,'users':users})
 
 
@@ -312,7 +316,7 @@ def allocate_product_to_order(product_id, order_qty, sales_id):
     remaining_qty = order_qty
     allocated_batches = []
 
-    with translation.atomic():  # Ensures atomic transaction
+    with transaction.atomic():  # Ensures atomic transaction
         for batch in batches:
             if remaining_qty <= 0:
                 break
@@ -341,9 +345,48 @@ def allocate_product_to_order(product_id, order_qty, sales_id):
             )
 
     return f"Order placed successfully for {order_qty} units of {product.product_name}"
-@login_required
+# @login_required
 def manage_profile(request):
-    user = request.user
+    # user = request.user
+    # roles = role.objects.values('role_id', 'role_type').distinct()
+    # shops = shop.objects.all()
+    # areas = Area.objects.all()
+
+    # if request.method == "POST":
+    #     if "current_password" in request.POST:  # Change Password Logic
+    #         current_password = request.POST["current_password"]
+    #         new_password = request.POST["new_password"]
+    #         confirm_password = request.POST["confirm_password"]
+
+    #         if not check_password(current_password, user.password):
+    #             messages.error(request, "Current password is incorrect.")
+    #         elif new_password != confirm_password:
+    #             messages.error(request, "New password and confirm password do not match.")
+    #         else:
+    #             user.set_password(new_password)
+    #             user.save()
+    #             update_session_auth_hash(request, user)  # Keep user logged in
+    #             messages.success(request, "Password updated successfully!")
+
+    #     else:  # Update Profile Logic
+    #         user.Fname = request.POST["Fname"]
+    #         user.Lname = request.POST["Lname"]
+    #         user.Gender = request.POST["Gender"]
+    #         user.Address = request.POST["Address"]
+    #         user.Mob_no = request.POST["Mob_no"]
+    #         user.role_id = role.objects.get(id=request.POST["role_id"])
+    #         user.shop_id = shop.objects.get(id=request.POST["shop_id"])
+    #         user.Area_id = Area.objects.get(id=request.POST["Area_id"])
+    #         user.is_active = request.POST["is_active"] == "True"
+    #         user.save()
+    #         messages.success(request, "Profile updated successfully!")
+
+    #     return redirect("manage_profile")
+
+    # return render(request, "manage_profile.html", {"user": user, "roles": roles, "shops": shops, "areas": areas})
+
+    user_id = request.session.get('user_id')
+    user = CustomUser.objects.get(User_id=user_id)
     roles = role.objects.values('role_id', 'role_type').distinct()
     shops = shop.objects.all()
     areas = Area.objects.all()
@@ -370,19 +413,18 @@ def manage_profile(request):
             user.Gender = request.POST["Gender"]
             user.Address = request.POST["Address"]
             user.Mob_no = request.POST["Mob_no"]
-            user.role_id = role.objects.get(id=request.POST["role_id"])
-            user.shop_id = shop.objects.get(id=request.POST["shop_id"])
-            user.Area_id = Area.objects.get(id=request.POST["Area_id"])
-            user.is_active = request.POST["is_active"] == "True"
+            user.role_id = role.objects.get(role_id=request.POST["role_id"])
+            user.shop_id = shop.objects.get(shop_id=request.POST["shop_id"])
+            user.Area_id = Area.objects.get(Area_id=request.POST["area_id"])
+            user.is_active = request.POST.get("is_active", False) == "on"
             user.save()
             messages.success(request, "Profile updated successfully!")
 
         return redirect("manage_profile")
 
     return render(request, "manage_profile.html", {"user": user, "roles": roles, "shops": shops, "areas": areas})
-
-
-def register(request):
+def register_view(request):   
+    
     if request.method == "POST":
         fname = request.POST.get('fname')
         lname = request.POST.get('lname')
@@ -390,48 +432,132 @@ def register(request):
         address = request.POST.get('address')
         mob_no = request.POST.get('mob_no')
         email = request.POST.get('email')
-        password = request.POST.get('password')
-        area_id = request.POST.get('area_id')  # Foreign Key
-        shop_id = request.POST.get('shop_id')  # Foreign Key
-        role_id = request.POST.get('role_id')  # Foreign Key
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        area_id = request.POST.get('area_id')
+        shop_id = request.POST.get('shop_id')
+        role_id = request.POST.get('role_id')
 
-        if user.objects.filter(Email=email).exists():
-            messages.error(request, "Email already registered!")
-            return redirect('register')
+        if password1 != password2:
+            messages.error(request, "Passwords do not match.")
+            return redirect('register_view')
 
-        hashed_password = make_password(password)  # ✅ Password hashing
-        new_user = user(
+        if CustomUser.objects.filter(Email=email).exists():
+            # messages.error(request, "Email already registered!")
+            return redirect('register_view')
+
+        hashed_password = make_password(password1)  # Password hashing
+        new_user = CustomUser(
             Fname=fname, Lname=lname, Gender=gender, Address=address,
             Mob_no=mob_no, Email=email, password=hashed_password,
             Area_id_id=area_id, shop_id_id=shop_id, role_id_id=role_id
         )
         new_user.save()
-        messages.success(request, "Account created successfully!")
-        return redirect('login')
+        # messages.success(request, "Account created successfully!")
+        return redirect('login_view')
 
-    return render(request, 'register.html')
-
+    shops = shop.objects.all()
+    roles = role.objects.all()
+    areas = Area.objects.all()
+    return render(request, 'register_view.html', {'shops': shops, 'roles': roles, 'areas': areas})
 # 🟢 User Login View
-def user_login(request):
-    if request.method == "POST":
+def login_view(request):
+    # if request.method == "POST":
+    #     email = request.POST.get('email')
+    #     password = request.POST.get('password')
+
+    #     try:
+    #         user_obj = CustomUser.objects.get(Email=email)
+    #         if check_password(password, user_obj.password):  # ✅ Password verify
+    #             request.session['user_id'] = user_obj.User_id  # ✅ Session store
+    #             # messages.success(request, "Login successful!")
+    #             return redirect('ownerhome')
+    #         else:
+    #             pass
+    #             # messages.error(request, "Invalid password!")
+    #     except CustomUser.DoesNotExist:
+    #         # messages.error(request, "User does not exist!")
+    #         pass
+    # return render(request, 'login_view.html')
+     if request.method == "POST":
         email = request.POST.get('email')
         password = request.POST.get('password')
 
         try:
-            user_obj = user.objects.get(Email=email)
-            if check_password(password, user_obj.password):  # ✅ Password verify
-                request.session['user_id'] = user_obj.User_id  # ✅ Session store
-                messages.success(request, "Login successful!")
-                return redirect('dashboard')
+            user_obj = CustomUser.objects.get(Email=email)
+            if check_password(password, user_obj.password):  # Password verify
+                if user_obj.role_id.role_type == 'admin':  # Check if the user is an admin
+                    request.session['user_id'] = user_obj.User_id  # Session store
+                    # messages.success(request, "Login successful!")
+                    return redirect('ownerhome')
+                else:
+                    pass
+                    # messages.error(request, "You do not have permission to access this page.")
             else:
-                messages.error(request, "Invalid password!")
-        except user.DoesNotExist:
-            messages.error(request, "User does not exist!")
-
-    return render(request, 'login.html')
-
-# 🟢 User Logout View
-def user_logout(request):
+                pass
+                # messages.error(request, "Invalid password!")
+        except CustomUser.DoesNotExist:
+           pass
+            # messages.error(request, "User does not exist!")
+     return render(request, 'login_view.html')
+def logout(request):
     request.session.flush()  # ✅ Session clear
-    messages.success(request, "Logged out successfully!")
-    return redirect('login')
+    # messages.success(request, "Logged out successfully!")
+    return redirect('login_view')
+
+
+
+def sales_report(request):
+    # Aggregate sales data by month
+    sales_data = Sales.objects.values('Sales_date__month').annotate(total_sales=Sum('sales_details__qty')).order_by('Sales_date__month')
+    total_revenue = Sales.objects.aggregate(total_revenue=Sum('sales_details__price'))['total_revenue']
+    total_orders = Sales.objects.count()
+    total_customers = CustomUser.objects.count()
+
+    return render(request, 'sales_report.html', {
+        'sales_data': sales_data,
+        'total_revenue': total_revenue,
+        'total_orders': total_orders,
+        'total_customers': total_customers,
+    })
+
+def forgot_pass(request):
+   if request.method == "POST":
+        email = request.POST.get('email')
+        try:
+            user = CustomUser.objects.get(Email=email)
+            reset_token = get_random_string(length=32)
+            user.reset_token = reset_token
+            user.save()
+            reset_url = request.build_absolute_uri(f'/owner/reset_password/{reset_token}/')
+            send_mail(
+                'Password Reset Request',
+                f'Click the link below to reset your password:\n{reset_url}',
+                'noreply@example.com',
+                [email],
+                fail_silently=False,
+            )
+            messages.success(request, "Password reset link has been sent to your email.")
+            return redirect('login_view')
+        except CustomUser.DoesNotExist:
+            messages.error(request, "User with this email does not exist.")
+   return render(request, 'forgot_pass.html')
+
+def reset_password(request, reset_token):
+    try:
+        user = CustomUser.objects.get(reset_token=reset_token)
+        if request.method == "POST":
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            if new_password == confirm_password:
+                user.password = make_password(new_password)
+                user.reset_token = None
+                user.save()
+                messages.success(request, "Password has been reset successfully.")
+                return redirect('login_view')
+            else:
+                messages.error(request, "Passwords do not match.")
+        return render(request, 'reset_password.html', {'reset_token': reset_token})
+    except CustomUser.DoesNotExist:
+        messages.error(request, "Invalid password reset token.")
+        return redirect('forgot_pass')
