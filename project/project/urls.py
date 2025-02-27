@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from  shop import views
 from owner import views
+from delivery import views
 # from account import views as account_views
 from django.urls import include
 
@@ -25,7 +26,8 @@ from django.urls import include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path(" ",views.index,name="home"),
-    path('shop/', include('shop.urls')),
+    path('', include('shop.urls')),
     path('owner/', include('owner.urls')),
+    path('delivery/', include('delivery.urls')),
     # path('account/', include('account.urls')),
 ]

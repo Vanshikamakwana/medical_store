@@ -1,0 +1,115 @@
+{% extends "delivery/template/base.html" %}
+{% load static %}
+
+{% block title %}View Sales{% endblock %}
+
+{% block content %}
+
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Sales Records</h2>
+
+    <!-- Search and Filter -->
+    {% comment %} <div class="d-flex justify-content-between mb-3">
+        <input type="text" id="searchInput" class="form-control w-50" placeholder="Search Sales...">
+        <select id="statusFilter" class="form-select w-25">
+            <option value="">All Status</option>
+            <option value="assigned">Assigned</option>
+            <option value="dispatched">Dispatched</option>
+            <option value="delivered">Delivered</option>
+            <option value="pending">Pending</option>
+        </select>
+    </div> {% endcomment %}
+
+    <!-- Spacer: Adds 2 lines of space -->
+    <div style="height: 2em;"></div>
+
+    <!-- Sales Table -->
+    <div class="table-responsive">
+        <table class="table" style="border-collapse: collapse; width: 100%;">
+            <thead class="table-dark">
+                <tr>
+                    <th style="border: 2px solid black; padding: 8px; text-align: center;">Sales ID</th>
+                    <th style="border: 2px solid black; padding: 8px; text-align: center;">User</th>
+                    <th style="border: 2px solid black; padding: 8px; text-align: center;">SGST</th>
+                    <th style="border: 2px solid black; padding: 8px; text-align: center;">CGST</th>
+                    <th style="border: 2px solid black; padding: 8px; text-align: center;">Sales Date</th>
+                    <th style="border: 2px solid black; padding: 8px; text-align: center;">Order Status</th>
+                </tr>
+            </thead>
+            <tbody id="salesTable">
+                {% for sale in sales %}
+                <tr>
+                    <td style="border: 2px solid black; padding: 8px; text-align: center;">{{ sale.Sales_id }}</td>
+                    <td style="border: 2px solid black; padding: 8px; text-align: center;">{{ sale.User_id.Fname }} {{ sale.User_id.Lname }}</td>
+                    <td style="border: 2px solid black; padding: 8px; text-align: center;">{{ sale.SGST }}</td>
+                    <td style="border: 2px solid black; padding: 8px; text-align: center;">{{ sale.CGST }}</td>
+                    <td style="border: 2px solid black; padding: 8px; text-align: center;">{{ sale.Sales_date|date:"Y-m-d" }}</td>
+                    <td style="border: 2px solid black; padding: 8px; text-align: center;" class="order-status">
+                        <form method="post" action="{% url 'delivery:update_sale_status' sale.Sales_id %}">
+                            {% csrf_token %}
+                            <select name="status" class="form-select status-dropdown" onchange="this.form.submit()">
+                                <option value="assigned" {% if sale.order_status == 'assigned' %}selected{% endif %}>Assigned</option>
+                                <option value="dispatched" {% if sale.order_status == 'dispatched' %}selected{% endif %}>Dispatched</option>
+                                <option value="delivered" {% if sale.order_status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                <option value="pending" {% if sale.order_status == 'pending' %}selected{% endif %}>Pending</option>
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td style="border: 2px solid black; padding: 8px; text-align: center;" colspan="6" class="text-center">No sales found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<!-- Inline JavaScript -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const salesTable = document.getElementById("salesTable").getElementsByTagName("tr");
+
+    searchInput.addEventListener("keyup", function () {
+        filterSales();
+    });
+
+    statusFilter.addEventListener("change", function () {
+        filterSales();
+    });
+
+    function filterSales() {
+        const searchValue = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value.toLowerCase();
+
+        console.log("Search Value:", searchValue);
+        console.log("Status Value:", statusValue);
+
+        for (let row of salesTable) {
+            const salesId = row.cells[0]?.textContent.toLowerCase() || "";
+            const userName = row.cells[1]?.textContent.toLowerCase() || "";
+            const orderStatus = row.cells[5]?.textContent.toLowerCase() || "";
+
+            console.log("Sales ID:", salesId);
+            console.log("User Name:", userName);
+            console.log("Order Status:", orderStatus);
+
+            if (
+                (salesId.includes(searchValue) || userName.includes(searchValue)) &&
+                (statusValue === "" || orderStatus.includes(statusValue))
+            ) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -32,7 +32,7 @@ urlpatterns = [
     path('sales_report/', views.sales_report, name='sales_report'),
     path('forgot/', views.forgot_pass, name='forgot_pass'),
     path('reset_password/<str:reset_token>/', views.reset_password, name='reset_password'),
-
+    path('payment/', views.manage_payment, name='manage_payment'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,0 +1,67 @@
+{% extends "delivery/template/base.html" %}
+{% load static %}
+
+{% block title %}Sales History{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Sales History</h2>
+    <br/>
+    <br/>
+
+    <!-- Sales Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Sales ID</th>
+                    <th>User</th>
+                    <th>SGST</th>
+                    <th>CGST</th>
+                    <th>Sales Date</th>
+                    <th>Order Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.Sales_id }}</td>
+                    <td>{{ sale.User_id.Fname }} {{ sale.User_id.Lname }}</td>
+                    <td>{{ sale.SGST }}</td>
+                    <td>{{ sale.CGST }}</td>
+                    <td>{{ sale.Sales_date|date:"Y-m-d" }}</td>
+                    <td>{{ sale.get_order_status_display }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No sales found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Inline CSS -->
+<style>
+    .table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    .table th, .table td {
+        border: 2px solid black;
+        padding: 8px;
+        text-align: center;
+    }
+    .table thead th {
+        background-color: #343a40;
+        color: white;
+    }
+    .table tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+    .table tbody tr:hover {
+        background-color: #ddd;
+    }
+</style>
+{% endblock %}

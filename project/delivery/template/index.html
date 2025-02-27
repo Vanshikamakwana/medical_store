@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Dashboard</title>
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        /* Basic Styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            background-color: #f4f4f4;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #2c3e50;
+            color: white;
+            padding-top: 20px;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 22px;  /* थोड़ा बड़ा टेक्स्ट */
+            font-weight: bold; /* टेक्स्ट को मोटा किया */
+            color: #cccccc;  /* हल्का डार्क ग्रे */
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;  /* Pointer cursor for button-like effect */
+            display: flex;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        
+        .sidebar ul li i {
+            margin-right: 10px;
+        }
+        .sidebar ul li:hover {
+            background-color: #34495e;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            width: 100%;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .assigned { background-color: orange; color: white; }
+        .dispatched { background-color: blue; color: white; }
+        .delivered { background-color: green; color: white; }
+        .pending { background-color: red; color: white; }
+
+        .btn {
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+        }
+        .btn-deliver { background-color: green; }
+        .btn-out { background-color: blue; }
+        .btn:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<!-- Sidebar -->
+<div class="sidebar">
+    <h2>Delivery Panel</h2>
+     <ul>
+        <li onclick="location.href='{% url 'delivery:delivery_view_sales' %}'">
+            <i class="fas fa-truck"></i> <span>View Order</span>
+        </li>
+        <li onclick="location.href='{% url 'delivery:delivery_sales_history' %}'">
+            <i class="fas fa-history"></i> <span>Sales History</span>
+        </li>
+        {% comment %} <li onclick="location.href='{% url 'delivery:delivery_logout' %}'">
+            <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+        </li> {% endcomment %}
+    </ul> 
+    {% comment %} <a href="{% url 'delivery_logout' %}">
+        <i class="fas fa-truck"></i> <span>logout</span> {% endcomment %}
+</div>
+
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container">
+        <h2>Assigned Orders</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="salesTable">
+                {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.id }}</td>
+                    <td>{{ sale.customer_name }}</td>
+                    <td>{{ sale.address }}</td>
+                    <td>
+                        <span class="status {% if sale.status == 'assigned' %}assigned
+                                             {% elif sale.status == 'dispatched' %}dispatched
+                                             {% elif sale.status == 'delivered' %}delivered
+                                             {% elif sale.status == 'pending' %}pending{% endif %}">
+                            {{ sale.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-out" onclick="updateStatus(this, 'dispatched')">Dispatched</button>
+                        <button class="btn btn-deliver" onclick="updateStatus(this, 'delivered')">Delivered</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+              </table>
+    </div>
+</div>
+
+<script>
+    function updateStatus(button, newStatus) {
+        var row = button.parentElement.parentElement;
+        var statusCell = row.querySelector(".status");
+
+        // स्टेटस अपडेट करें
+        statusCell.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+
+        // पहले के क्लास हटा दें
+        statusCell.classList.remove("assigned", "dispatched", "delivered", "pending");
+
+        // नया क्लास जोड़ें
+        statusCell.classList.add(newStatus);
+    }
+</script>
+
+
+</body>
+</html>

@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import render,redirect,get_object_or_404
 from owner.models import Batch, Product_company, Sales, sales_details,CustomUser
-from owner.models import purchase, suppliers,Product,purchase_details,Delivery_person,role,Area,shop
+from owner.models import purchase, suppliers,Product,payment,purchase_details,Delivery_person,role,Area,shop
 from django.contrib.auth.hashers import check_password, make_password
 from django.utils.crypto import get_random_string
 from django.db.models import Sum
@@ -15,75 +15,35 @@ from django.core.mail import send_mail
 # Create your views here.
 @admin_required
 def index(request):
-    orders = Sales.objects.all()
-    # Aggregate sales data by month
-    sales_data = Sales.objects.values('Sales_date__month').annotate(total_sales=Sum('sales_details__qty')).order_by('Sales_date__month')
-    users=CustomUser.objects.all()
-    return render(request,'owner/template/index.html', {'orders': orders,'users':users})
+    total_sales = Sales.objects.aggregate(total_sales=Sum('sales_details__qty'))['total_sales'] or 0
 
+    # Calculate total revenue
+    total_revenue = Sales.objects.aggregate(total_revenue=Sum('sales_details__price'))['total_revenue'] or 0
+
+    # Calculate new users
+    # new_users = CustomUser.objects.filter(date_joined__month=datetime.now().month).count()
+
+    # Fetch sales data for the chart
+    # sales_data = Sales.objects.values('sales_date__month').annotate(total_sales=Sum('salesdetails__qty')).order_by('sales_date__month')
+
+    # Fetch orders and users for the tables
+    orders = Sales.objects.all()
+    users = CustomUser.objects.all()
+
+    return render(request, 'owner/template/index.html', {
+        'total_sales': total_sales,
+        'total_revenue': total_revenue,
+        # 'new_users': new_users,
+        # 'sales_data': sales_data,
+        'orders': orders,
+        'users': users,
+    })
           
 def view_order(request):
     orders = Sales.objects.all()
     # sales_details=sales_details.objects.all()
     users=CustomUser.objects.all()
     return render(request, 'view_order.html', {'orders': orders,'users':users})
-
-
-# def purchase_order(request):
-    #  if request.method == 'POST':
-    #     # Form data ko handle kar rahe hain
-    #     purchase_name = request.POST.get('purchase_name')
-    #     purchase_desc = request.POST.get('purchase_desc')
-    #     total_price = request.POST.get('total_price')
-    #     suppliers_id = request.POST.get('suppliers_id')
-    #     product_id = request.POST.get('product_id')
-    #     qty = request.POST.get('qty')
-    #     price = request.POST.get('price')
-
-
-    #      # Convert qty and price to appropriate types
-    #     qty = int(qty)
-    #     price = float(price)
-    #     total_price = float(total_price)
-
-    #     # Supplier instance ko fetch kar rahe hain using the ID
-    #     supplier_instance = suppliers.objects.get(suppliers_id=suppliers_id)
-    #     product_instance = Product.objects.get(product_id=product_id)
-
-    #     # New Purchase Order create karna
-    #     new_purchase = purchase(
-    #         purchase_name=purchase_name,
-    #         purchase_desc=purchase_desc,
-    #         total_price=total_price,
-    #         suppliers_id=supplier_instance
-    #     )
-    #     new_purchase.save()
-
-    #     # New Purchase Details create karna
-    #     new_purchase_details = purchase_details(
-    #         product_id=product_instance,
-    #         purchase_id=new_purchase,
-    #         qty=qty,
-    #         price=price
-    #     )
-    #     new_purchase_details.save()
-
-
-    #      # Update the stock quantity of the product
-    #     product_instance.stock_quantity += qty
-    #     product_instance.save()
-
-    #     # Redirect to some success page or purchase list
-    #     return redirect('ownerhome')  # Modify this URL as per your app structure
-
-    #  else:
-    #         # GET request ke liye suppliers aur products ko fetch kar rahe hain
-    #         suppliers_list = suppliers.objects.all()
-    #         products_list = Product.objects.all()
-
-    #     # Template render karna
-    #  return render(request, 'purchase_order.html', {'suppliers_list': suppliers_list, 'products_list': products_list})
-
 
 def purchase_order(request):
    if request.method == 'POST':
@@ -305,7 +265,7 @@ def list_batches(request):
     batches = Batch.objects.all().order_by('-batch_expiry_date')
     return render(request, 'batch_list.html', {'batches': batches})
 
-def allocate_product_to_order(product_id, order_qty, sales_id):
+# def allocate_product_to_order(product_id, order_qty, sales_id):
     """
     कस्टमर द्वारा ऑर्डर किए गए product की quantity को available batches में से allocate करता है।
     अगर quantity एक batch में उपलब्ध नहीं है तो दूसरी batch से घटाएगा।
@@ -347,44 +307,6 @@ def allocate_product_to_order(product_id, order_qty, sales_id):
     return f"Order placed successfully for {order_qty} units of {product.product_name}"
 # @login_required
 def manage_profile(request):
-    # user = request.user
-    # roles = role.objects.values('role_id', 'role_type').distinct()
-    # shops = shop.objects.all()
-    # areas = Area.objects.all()
-
-    # if request.method == "POST":
-    #     if "current_password" in request.POST:  # Change Password Logic
-    #         current_password = request.POST["current_password"]
-    #         new_password = request.POST["new_password"]
-    #         confirm_password = request.POST["confirm_password"]
-
-    #         if not check_password(current_password, user.password):
-    #             messages.error(request, "Current password is incorrect.")
-    #         elif new_password != confirm_password:
-    #             messages.error(request, "New password and confirm password do not match.")
-    #         else:
-    #             user.set_password(new_password)
-    #             user.save()
-    #             update_session_auth_hash(request, user)  # Keep user logged in
-    #             messages.success(request, "Password updated successfully!")
-
-    #     else:  # Update Profile Logic
-    #         user.Fname = request.POST["Fname"]
-    #         user.Lname = request.POST["Lname"]
-    #         user.Gender = request.POST["Gender"]
-    #         user.Address = request.POST["Address"]
-    #         user.Mob_no = request.POST["Mob_no"]
-    #         user.role_id = role.objects.get(id=request.POST["role_id"])
-    #         user.shop_id = shop.objects.get(id=request.POST["shop_id"])
-    #         user.Area_id = Area.objects.get(id=request.POST["Area_id"])
-    #         user.is_active = request.POST["is_active"] == "True"
-    #         user.save()
-    #         messages.success(request, "Profile updated successfully!")
-
-    #     return redirect("manage_profile")
-
-    # return render(request, "manage_profile.html", {"user": user, "roles": roles, "shops": shops, "areas": areas})
-
     user_id = request.session.get('user_id')
     user = CustomUser.objects.get(User_id=user_id)
     roles = role.objects.values('role_id', 'role_type').distinct()
@@ -561,3 +483,42 @@ def reset_password(request, reset_token):
     except CustomUser.DoesNotExist:
         messages.error(request, "Invalid password reset token.")
         return redirect('forgot_pass')
+    
+
+def manage_payment(request):
+    payment_type = request.GET.get('payment_type')
+    if payment_type:
+        payments = payment.objects.filter(payment_type=payment_type)
+    else:
+        payments = payment.objects.all()
+
+    return render(request, "manage_payment.html", {"payments": payments, "selected_method": payment_type})
+
+
+def allocate_stock(sales_detail):
+    """
+    Allocate stock from batches for the given sales detail.
+    """
+    product = sales_detail.product_id
+    required_qty = sales_detail.qty
+
+    # Step 1: Get all available batches sorted by expiry date (FIFO)
+    available_batches = Batch.objects.filter(product_id=product).order_by('batch_expiry_date')
+
+    if not available_batches.exists():
+        raise ValueError(f"Product '{product.product_name}' is out of stock!")
+
+    remaining_qty = required_qty
+
+    # Step 2: Iterate through batches and allocate stock
+    for batch in available_batches:
+        if remaining_qty <= 0:
+            break  # No more stock needed, exit loop
+
+        remaining_qty = batch.allocate_stock(remaining_qty)
+
+    # Step 3: If there is remaining quantity that couldn't be fulfilled, raise an error
+    if remaining_qty > 0:
+        raise ValueError(f"Not enough stock available for '{product.product_name}'!")
+
+    return True

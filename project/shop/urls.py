@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+
 urlpatterns = [
     path("", views.index,name="home"),
     path('about/',views.about,name="about"),
@@ -10,15 +11,16 @@ urlpatterns = [
     path('service_details/',views.service_details,name="service_details"),
     path('faq/',views.faq,name="faq"),
     path('locations/',views.locations,name="locations"),
-    path('shop/', views.shop, name='shop'),  # Show all products when no category is selected
-    path('shop/<str:cat_name>/', views.shop, name='shop'),  # Show category-specific products
-# <int:cat_id>/
+    path('shop/',views.Shop,name="shop"),
+    path('shop/<str:cat_name>/', views.Shop, name='shop'),  # Show category-specific products
+    path('add-to-cart/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/',views.cart,name="cart"),
     path('wishlist/',views.wishlist,name="wishlist"),
     path('checkout/',views.checkout,name="checkout"),
     path('order_tracking/',views.order_tracking,name="order_tracking"),
     path('account/',views.account,name="account"),
     path('login/',views.login,name="login"),
+    path('logout/',views.user_logout,name="logout"),
    
     path('register/',views.register,name="register"),
     path('contact/',views.contact,name="contact"),
@@ -28,10 +30,11 @@ urlpatterns = [
     path('login-register/',views.login_register,name="login-register"),
     path('blog-details/',views.blog_details,name="blog-details"),
     path('error/',views.error,name="error"),
-    path('coming-soon/',views.coming_soon,name="coming-soon"),
-    path('product-details/',views.product_details,name="product-details"),
-    path('add-listing/',views.add_listing,name="add-listing"),
-    path('portfolio-details/',views.protfolio_details,name="portfolio-details"),
+     path('coming-soon/',views.coming_soon,name="coming-soon"),
+     path('product-details/<int:product_id>/',views.product_details,name="product-details"),
+      path('add-listing/',views.add_listing,name="add-listing"),
+       path('portfolio-details/',views.protfolio_details,name="portfolio-details"),
+     path('quick-view/<int:product_id>/',views.quick_view,name="quick-view"),
    
     
    
@@ -44,6 +47,6 @@ urlpatterns = [
     # path("checkout/",views.checkout,name="checkout"),
 
 ]
-# + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

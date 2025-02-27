@@ -10,46 +10,6 @@ from datetime import date, datetime
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin,BaseUserManager
 from django.contrib.auth.models import User
 
-# class CustomUserManager(BaseUserManager):
-#     def create_user(self, email, password=None, **extra_fields):
-#         if not email:
-#             raise ValueError("The Email field must be set")
-#         email = self.normalize_email(email)
-#         user = self.model(email=email, **extra_fields)
-#         user.set_password(password)
-#         user.save(using=self._db)
-#         return user
-
-#     def create_superuser(self, email, password=None, **extra_fields):
-#         extra_fields.setdefault('is_staff', True)
-#         extra_fields.setdefault('is_superuser', True)
-#         return self.create_user(email, password, **extra_fields)
-
-# # ✅ 2. Custom User Model
-# class CustomUser(AbstractBaseUser, PermissionsMixin):
-#     User_id = models.AutoField(primary_key=True)  
-#     Fname = models.CharField(max_length=20, null=False)
-#     Lname = models.CharField(max_length=20, null=False)
-#     Gender = models.CharField(max_length=2, null=False)
-#     Address = models.CharField(max_length=20, null=False)
-#     Mob_no = models.CharField(max_length=13, null=False)
-#     Email = models.EmailField(unique=True)
-#     password = models.CharField(max_length=128, null=False)
-#     is_active = models.BooleanField(default=True)
-#     is_staff = models.BooleanField(default=False)
-
-#     objects = CustomUserManager()
-
-#     USERNAME_FIELD = 'Email'
-#     REQUIRED_FIELDS = ['Fname', 'Lname']
-
-#     class Meta:
-#         db_table = 'user'  # ✅ MySQL ke existing "user" table se match karega
-
-#     def __str__(self):
-#         return self.Email
-
-
 class state(models.Model):
     
     state_id=models.AutoField(primary_key=True)
@@ -108,7 +68,7 @@ class CustomUser(models.Model):
     role_id = models.ForeignKey('role', on_delete=models.CASCADE,default="customer")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
+    # created_at = models.DateTimeField(auto_now_add=True)
     
 class complains (models.Model):
     cmp_id=models.AutoField(primary_key=True)
@@ -117,7 +77,7 @@ class complains (models.Model):
     cmp_response=models.CharField(max_length=20,null=False)
     User_id=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
 
-class  Product_company(models.Model):
+class Product_company(models.Model):
     comp_id=models.AutoField(primary_key=True)
     comp_name=models.CharField(max_length=20,null=False)
     comp_mob_no=models.CharField(max_length=13,null=False)
@@ -223,6 +183,18 @@ class Batch(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.batch_number}"
+    
+     # Method to check if stock is sufficient in this batch
+    def allocate_stock(self, quantity):
+        if self.batch_quantity >= quantity:
+            self.batch_quantity -= quantity
+            self.save()
+            return 0  # All quantity allocated
+        else:
+            remaining = quantity - self.batch_quantity
+            self.batch_quantity = 0
+            self.save()
+            return remaining  # Return remaining quantity after depletion
    
 
 class payment(models.Model):

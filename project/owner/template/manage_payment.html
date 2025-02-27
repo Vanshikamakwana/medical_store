@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Payments</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Manage Payments</h2>
+        <form method="GET" class="mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <select name="payment_method" class="form-select">
+                        <option value="">All Payment Methods</option>
+                        <option value="cash" {% if selected_method == 'cash' %}selected{% endif %}>Cash</option>
+                        <option value="Credit_Card" {% if selected_method == 'Credit Card' %}selected{% endif %}>Credit Card</option>
+                        <option value="Debit_Card" {% if selected_method == 'Debit Card' %}selected{% endif %}>Debit Card</option>
+                        <option value="cheque" {% if selected_method == 'cheque' %}selected{% endif %}>Net Banking</option>
+                        <option value="other" {% if selected_method == 'other' %}selected{% endif %}>other</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </div>
+            </div>
+        </form>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Payment Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.customer }}</td>
+                        <td>{{ payment.amount }}</td>
+                        <td>{{ payment.payment_type }}</td>
+                        <td>{{ payment.payment_date }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

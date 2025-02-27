@@ -1,24 +1,36 @@
-from itertools import product
-from django.contrib import messages
-from urllib import request
-from django.shortcuts import render,redirect, get_object_or_404
-from django.contrib.auth.hashers import make_password
-from django import forms
-from django.contrib.auth.models import User
-from django.contrib.auth import login as auth_login, authenticate
-from .forms import RegisterForm
-from owner.models import Product,category,subcategory, role,CustomUser
+from decimal import Decimal
+from django.shortcuts import render,redirect,HttpResponse
+from owner.models import Product,Cart,CustomUser,shop,role,Area,category,subcategory
 from django.conf import settings
-# from django.contrib.auth import get_user_model
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
-# User = get_user_model()
+
+from django.contrib.auth import authenticate, login as auth_login, logout 
+from django.contrib import messages
+from django.contrib.auth.models import User
+
+from django.contrib.auth.hashers import make_password, check_password
+
+import json
 # Create your views here.
 def index(request):
-#    products = product.objects.all()  # Sare products fetch karne ke liye
-#    for product in products:
-#      print(product.product_name, product.product_price)
+   products=Product.objects.all()
+   context={'products' :products,'MEDIA_URL':settings.MEDIA_URL}
+
+#    if 'user_id' not in request.session:
+#         messages.error(request, "You must be logged in to view this page!")
+#         return redirect('login')
+
+#    user_id = request.session['user_id']
+#    user_obj = CustomUser.objects.get(User_id=user_id)
+   
     
-   return render(request,"index.html")
+   return render(request,"shop/template/index.html",context)
 
 def about(request):
      return render(request,"shop/template/about.html")
@@ -35,17 +47,17 @@ def faq(request):
 def locations(request):
      return render(request,"shop/template/locations.html")
 
-def shop(request,cat_name=None):
+def Shop(request,cat_name=None):
     category_obj = None  # Initialize category
     subcategories = subcategory.objects.all()  # Fetch all subcategories
-    products = product.objects.all()  # Fetch all products
+    products = Product.objects.all()  # Fetch all products
 
     if cat_name:
         try:
             category_obj = category.objects.filter(cat_name=cat_name).first()  # Get first matching category
             if category_obj:
                 subcategories = subcategory.objects.filter(cat_id=category_obj)
-                products = product.objects.filter(Sub_cat_id__in=subcategories) 
+                products = Product.objects.filter(Sub_cat_id__in=subcategories) 
                  # _in ka use You have a category named "Skin Care"
                     # "Skin Care" has multiple subcategories like "Face Wash", "Moisturizer", and "Sunscreen".
                     # You need to get all products that belong to any of these subcategories.
@@ -67,7 +79,73 @@ def shop(request,cat_name=None):
     })
 
 def cart(request):
-     return render(request,"shop/template/cart.html")
+    if not is_authenticated(request):
+        return redirect('login')
+    cart_items = request.session.get('cart', {})
+    products = Product.objects.filter(product_id__in=cart_items.keys())
+    cart_details = []
+    total_price = Decimal('0.00')
+    
+    for product in products:
+        product_id_str = str(product.product_id)
+        quantity = cart_items[product_id_str]['quantity']
+        price = Decimal(cart_items[product_id_str]['price'])
+        subtotal = price * quantity
+        total_price += subtotal
+        cart_details.append({
+            'product_id': product.product_id,
+            'product_name': product.product_name,
+            'pro_photo_url': product.pro_photo_url,
+            'quantity': quantity,
+            'price': price,
+            'subtotal': subtotal,
+        })
+    
+    return render(request, "cart.html", {'cart_details': cart_details, 'total_price': total_price})
+
+def add_to_cart(request, product_id):
+#      if not is_authenticated(request):
+#         return redirect('login') 
+#      user = CustomUser.objects.get(User_id=request.session['User_id'])
+#      try:
+#        products = Product.objects.get(product_id=id)
+#        print(f"Product Found: {products.product_name}")
+#      except Product.DoesNotExist:
+#       print(f"Product with ID {id} does not exist.")
+     
+#      price=products.product_price
+#      print(price)
+
+#      qty = int(request.POST.get('qty', 1))
+
+#      total_amount = price * qty
+    
+#     # Add or update the cart item
+#      cart_item,created = Cart.objects.get_or_create(
+#         User_id=user,
+#         product_id=products,
+#     )
+    
+#      cart_item.quantity += 1 
+#      total_amount = products.product_price * cart_item.qty  # Recalculate total amount with new qty
+    
+#      cart_item.totalamount = total_amount  # Set total # Increment quantity by 1
+#      cart_item.save()
+    
+#      return redirect('cart')
+    
+     if request.method == 'POST':
+        product = Product.objects.get(product_id=product_id)
+        cart = request.session.get('cart', {})
+        product_id_str = str(product_id)  # Convert product_id to string for dictionary key
+        if product_id_str in cart:
+            cart[product_id_str]['quantity'] += 1
+        else:
+            cart[product_id_str] = {'quantity': 1, 'price': str(product.product_price)}  # Convert Decimal to string
+        request.session['cart'] = cart
+        return JsonResponse({'message': 'Product added to cart', 'cart': cart})
+     return JsonResponse({'error': 'Invalid request'}, status=400)
+
 def wishlist(request):
      return render(request,"shop/template/wishlist.html")
 def checkout(request):
@@ -76,64 +154,80 @@ def order_tracking(request):
      return render(request,"shop/template/order_tracking.html")
 def account(request):
      return render(request,"shop/template/account.html")
+
+def is_authenticated(request):
+    return 'User_id' in request.session
+
 def login(request):
      if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
         
-        user = authenticate(request, username=email, password=password)
-        
-        if user is not None:
-            login(request, user)
+        try:
+            # Fetch the user from your custom table
+            user = CustomUser.objects.get(Email=email)
             
-            # ✅ Role ID ke basis pe redirect karna
-            if user.role_id.id == 1:  # 1 means Admin
-                return redirect('ownerhome')
-            else:  # Any other role means Customer
-                return redirect('home')
-        else:
-            messages.error(request, "Invalid email or password")
+            # Check if the provided password matches the stored hashed password
+            if check_password(password, user.password):  # check_password hashes the password
+                # If authentication is successful, log the user in
+                request.session['User_id'] = user.User_id  # Store user info in session
+                return redirect('home')  # Redirect to homepage or any other page
+            else:
+                return HttpResponse('Invalid password')
+        
+        except CustomUser.DoesNotExist:
+             return HttpResponse('User does not exist')
     
-     return render(request, "login.html") 
+     return render(request, 'shop/template/login.html') 
      
-
+   
 def register(request):
-    if request.method == 'POST':
-        fname = request.POST['fname']
-        lname = request.POST['lname']
-        email = request.POST['email']
-        password = request.POST['password']
-        mob_no = request.POST['mob_no']
-        address = request.POST['address']
-        gender = request.POST['gender']
-        area_id = request.POST['area_id']
-        shop_id = request.POST['shop_id']
-        role_id = request.POST['role_id']  # Role ID (1 = Admin, 2 = Customer)
+    if request.method == "POST":
+        fname = request.POST.get('fname')
+        lname = request.POST.get('lname')
+        gender = request.POST.get('gender')
+        address = request.POST.get('address')
+        mob_no = request.POST.get('mob_no')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        area_id = request.POST.get('area_id')  # Foreign Key
+        shop_id = request.POST.get('shop_id')  # Foreign Key
+        role_id = request.POST.get('role_id')  # Foreign Key
 
-        if User.objects.filter(Email=email).exists():
-            messages.error(request, "Email already exists!")
+        if CustomUser.objects.filter(Email=email).exists():
+            messages.error(request, "Email already registered!")
             return redirect('register')
 
-        user = User(
-            Fname=fname,
-            Lname=lname,
-            Email=email,
-            Mob_no=mob_no,
-            Address=address,
-            Gender=gender,
-            Area_id_id=area_id,  # ForeignKey ke liye "_id" lagana zaroori hai
-            shop_id_id=shop_id,  # ForeignKey ke liye "_id" lagana zaroori hai
-            role_id_id=role_id  # Role assign karega
+        hashed_password = make_password(password)  # ✅ Password hashing
+        new_user = CustomUser(
+            Fname=fname, Lname=lname, Gender=gender, Address=address,
+            Mob_no=mob_no, Email=email, password=hashed_password,
+            Area_id_id=area_id, shop_id_id=shop_id, role_id_id=role_id
         )
-        user.set_password(password)  # ✅ Password ko hash karega
-        user.save()  # ✅ MySQL "user" table me save karega
-
-        messages.success(request, "Registration successful!")
+        new_user.save()
+        messages.success(request, "Account created successfully!")
         return redirect('login')
+    areas = Area.objects.all()
+    shops = shop.objects.all()
+    roles = role.objects.all()
 
-          
-    return render(request, 'register.html')
-# , {'form': form}
+
+    return render(request,"shop/template/register.html",{'areas': areas, 'shops': shops, 'roles': roles})
+
+
+# 🟢 User Login View
+
+# 🟢 User Logout View
+def user_logout(request):
+    logout(request)# ✅ Session clear
+     
+    messages.success(request, "Logged out successfully!")
+    return redirect('login')
+
+# 🟢 Dashboard/Profile View
+
+
+     
 
 def contact(request):
      return render(request,"shop/template/contact.html")
@@ -162,13 +256,28 @@ def error(request):
 def  coming_soon(request):
      return render(request,"shop/template/coming-soon.html")
 
-def  product_details(request):
-     
-
-      return render(request,"shop/template/product-details.html")
+def product_details(request,product_id):
+  try:
+       products=Product.objects.filter(product_id=product_id)
+  except:
+        products=None
+  
+  return render(request,"shop/template/product-details.html",{'products':products})
 
 def  add_listing(request):
      return render(request,"shop/template/add-listing.html")
+
+def quick_view(request, product_id):
+
+ products = Product.objects.get(product_id=product_id)
+ data = {
+        'name': products.product_name,
+        'description': products.product_des,
+        'price': products.product_price,
+        'image': products.pro_photo_url.url,
+    }
+ print(data)
+ return JsonResponse(data)
 
 
 # def contact(request):

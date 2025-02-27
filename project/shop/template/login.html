@@ -247,7 +247,7 @@
                                                 <!-- <li><a href="shop-grid.html">Shop Grid</a></li>
                                                 <li><a href="shop-left-sidebar.html">Shop Left sidebar</a></li>
                                                 <li><a href="shop-right-sidebar.html">Shop right sidebar</a></li> -->
-                                                <li><a href="{% url 'product-details' %}">Shop details </a></li>
+                                                <li><a href="{% url 'product-details' 1  %}">Shop details </a></li>
                                                 <li><a href="{% url 'cart' %}">Cart</a></li>
                                                 <li><a href="{% url  'wishlist'%}">Wishlist</a></li>
                                                 <li><a href="{% url 'checkout' %}">Checkout</a></li>
@@ -428,7 +428,7 @@
                             <!-- <li><a href="shop-grid.html">Shop Grid</a></li>
                             <li><a href="shop-left-sidebar.html">Shop Left sidebar</a></li>
                             <li><a href="shop-right-sidebar.html">Shop right sidebar</a></li> -->
-                            <li><a href="{% url 'product-details' %}">Shop details </a></li>
+                            <li><a href="{% url 'product-details' 1  %}">Shop details </a></li>
                             <li><a href="{% url 'cart' %}">Cart</a></li>
                             <li><a href="{% url  'wishlist'%}">Wishlist</a></li>
                             <li><a href="{% url 'checkout' %}">Checkout</a></li>
@@ -548,25 +548,17 @@
             <div class="row">
                 <div class="col-lg-6">
                     <div class="account-login-inner">
-                        {% if messages %}
-                        {% for message in messages %}
-                            <p style="color: red;">{{ message }}</p>
-                        {% endfor %}
-                        {% endif %}
-                        <form action="{% url 'login' %}" class="ltn__form-box contact-form-box" method="Post">
-
+                        <form method="POST" >
                             {% csrf_token %}
-                            <input type="email" name="email" placeholder="Email*" id="email" required>
-                            <input type="password" name="password" placeholder="Password*" id="password" required>
-                            <div class="btn-wrapper mt-0">
-                                <button class="theme-btn-1 btn btn-block" type="submit">SIGN IN</button>
-                            </div>
-                            <div class="go-to-btn mt-20">
-                                <a href="#"><small>FORGOTTEN YOUR PASSWORD?</small></a>
-                            </div>
+                            <input type="email" name="email" placeholder="email" required>
+                            <input type="password" name="password" placeholder="Password" required>
+                            <button type="submit">Login</button>
                         </form>
+                        
                     </div>
+
                 </div>
+                
                 <div class="col-lg-6">
                     <div class="account-create text-center pt-50">
                         <h4>DON'T HAVE AN ACCOUNT?</h4>
